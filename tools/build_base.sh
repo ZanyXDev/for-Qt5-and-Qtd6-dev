@@ -4,6 +4,7 @@ cd ../base
 
 docker  build \
 	--build-arg="LANG=ru-RU.UTF-8" \
+	--build-arg="TZ=Europe/Moscow" \
 	--platform=linux/amd64 \
 	--tag=zanyxdev/base_ubuntu_22.04_lts:latest  .
 
