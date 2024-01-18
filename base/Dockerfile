@@ -9,41 +9,51 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG LANG
 
 RUN \
-export DEBIAN_FRONTEND=noninteractive && \
+    export DEBIAN_FRONTEND=noninteractive && \
     apt-get -y update && \
     apt-get -y upgrade && \
-    apt-get -y install build-essential  \
-    freeglut3-dev libgl1-mesa-dev libglu1-mesa-dev libjpeg-dev libmysqlclient-dev \
-    libnss3-dev libopus-dev libpng-dev libsqlite3-dev libssl-dev \
-    libx11-xcb-dev libxcb-xinerama0-dev libxcb-xkb-dev libxcb1-dev \
-    libxcursor-dev libxi-dev libxml2-dev libxrender-dev libxslt-dev mesa-common-dev \
-    zlib1g-dev '^libxcb.*-dev' libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev \
-    libicu-dev libxslt-dev libxcursor-dev libxcomposite-dev libxdamage-dev libxrandr-dev libxtst-dev \
-    libxss-dev libdbus-1-dev libevent-dev libfontconfig1-dev libcap-dev libpulse-dev libudev-dev \
-    libpci-dev libnss3-dev libasound2-dev libegl1-mesa-dev libasound2-dev libgstreamer1.0-dev \
-    libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev libnspr4-dev libcups2-dev \
-    libavformat-dev libavcodec-dev libavutil-dev libswresample-dev libswscale-dev libavdevice-dev \
-    libmng-dev libwebp-dev libxcb-xinput-dev libwebpmux3 libvpx-dev zstd libzstd-dev \
-    libpcre2-dev libclang-dev libllvm14 python3 python3-html5lib libxshmfence-dev libxkbfile-dev libbluetooth-dev \
-    libsctp-dev libsnappy-dev libmd4c-dev libmd4c-html0-dev libharfbuzz-dev libminizip-dev libb2-dev libva-dev &&\
+    echo "Build essentials for ubuntu/debian" && \
+    apt-get -y install build-essential perl python3 git && \
+    echo "Libxcb packets" && \
+    apt-get -y install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev \
+                        libxcb-xinerama0-dev libxcb-xinput-dev libxcb-xkb-dev libxkbfile-dev && \
+    echo "Mesa-specific OpenGL extensions" && \
+    apt-get -y install mesa-common-dev libgl1-mesa-dev && \
+    echo "Qt WebKit Ubuntu/Debian" && \	
+    apt-get -y install flex bison gperf libicu-dev libxslt-dev ruby && \
+    echo "Qt WebEngine Ubuntu/Debian" && \	
+    apt-get -y install  libxcursor-dev libxcomposite-dev libxdamage-dev libxrandr-dev libxtst-dev libxss-dev libdbus-1-dev libevent-dev \
+	                    libfontconfig1-dev libcap-dev libpulse-dev libudev-dev libpci-dev libnss3-dev libasound2-dev libegl1-mesa-dev \
+			            gperf bison nodejs && \
+    echo "Qt Multimedia You'll need at least alsa-lib (>= 1.0.15) and gstreamer (>=0.10.24) with the base-plugins package." && \
+    apt-get -y install libasound2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev libgstreamer-plugins-bad1.0-dev && \
+    echo "QDoc Documentation Generator Tool Ubuntu/Debian " && \
+    apt-get -y install clang libclang-dev && \
+    apt-get -y install nano && \
+    apt clean -y && rm -rf /var/lib/apt/lists/*	
+    
+# set Timezone 
+ARG TZ
+ENV TZ=${TZ:-"America/New_York"}    
+RUN \
+    apt-get update && apt-get install -y tzdata  && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+    dpkg-reconfigure -f noninteractive tzdata && \
     apt clean -y && rm -rf /var/lib/apt/lists/*	
 
 # set locales
-
-RUN \
-	if [ "$LANG_ENV" != "ru_RU.UTF8" ]; then \
-	 apt-get update && apt-get install -y locales;\ 
-	 sed -i -e 's/# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' /etc/locale.gen && locale-gen; \
-    	 /usr/bin/ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone; \
-	fi
-
-# set Timezone 
-ENV TZ=${TZ:-"Europe/Moscow"}    
-
 # if LANG is null, set it to 'en_EN.UTF-8' (or leave as is otherwise).
 ENV LANG=${LANG:-"en_EN.UTF-8"}
 ENV LANGUAGE=${LANG:-"en_EN.UTF-8"}
 ENV LC_LANG=${LANG:-"en_EN.UTF-8"}
 ENV LC_ALL=${LANG:-"en_EN.UTF-8"}
-
+RUN \
+	 apt-get update && apt-get install -y locales &&\ 
+	 sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+	 sed -i -e 's/# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' /etc/locale.gen && \
+	 echo '$LANG'>/etc/default/locale && \
+	 dpkg-reconfigure --frontend=noninteractive locales && \
+	 update-locale $LANG && \
+	 apt clean -y && rm -rf /var/lib/apt/lists/*	
+	 
 ENTRYPOINT [ "/bin/bash", "-l", "-c" ]
