@@ -1,12 +1,9 @@
 FROM ubuntu:22.04 as source
 
-LABEL Description="This image based on Ubuntu 22.04,provides a base development\
+LABEL Description="This image based on Ubuntu 22.04,provides a base development \
                    environment (Linux and Android) for Qt developers"
 
 ENV DEBIAN_FRONTEND=noninteractive
-
-# Declare an argument for target arch and Qt version
-ARG LANG
 
 RUN \
     export DEBIAN_FRONTEND=noninteractive && \
@@ -30,30 +27,4 @@ RUN \
     echo "QDoc Documentation Generator Tool Ubuntu/Debian " && \
     apt-get -y install clang libclang-dev && \
     apt-get -y install nano && \
-    apt clean -y && rm -rf /var/lib/apt/lists/*	
-    
-# set Timezone 
-ARG TZ
-ENV TZ=${TZ:-"America/New_York"}    
-RUN \
-    apt-get update && apt-get install -y tzdata  && \
-    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
-    dpkg-reconfigure -f noninteractive tzdata && \
-    apt clean -y && rm -rf /var/lib/apt/lists/*	
-
-# set locales
-# if LANG is null, set it to 'en_EN.UTF-8' (or leave as is otherwise).
-ENV LANG=${LANG:-"en_EN.UTF-8"}
-ENV LANGUAGE=${LANG:-"en_EN.UTF-8"}
-ENV LC_LANG=${LANG:-"en_EN.UTF-8"}
-ENV LC_ALL=${LANG:-"en_EN.UTF-8"}
-RUN \
-	 apt-get update && apt-get install -y locales &&\ 
-	 sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
-	 sed -i -e 's/# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' /etc/locale.gen && \
-	 echo '$LANG'>/etc/default/locale && \
-	 dpkg-reconfigure --frontend=noninteractive locales && \
-	 update-locale $LANG && \
-	 apt clean -y && rm -rf /var/lib/apt/lists/*	
-	 
-ENTRYPOINT [ "/bin/bash", "-l", "-c" ]
+    apt clean -y && rm -rf /var/lib/apt/lists/*	    
