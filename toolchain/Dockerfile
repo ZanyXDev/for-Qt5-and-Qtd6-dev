@@ -74,7 +74,6 @@ ENV ANDROID_SDK_ROOT=/opt/android-sdk
 ENV ANDROID_NDK_ROOT=/opt/android-sdk/ndk/${ANDROID_NDK_VER}
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
-ENV PATH="/opt/Qt-${QT_VERSION}-${TARGETARCH}-lts-lgpl/bin:${PATH}"
 ENV PATH="/opt/cmake/bin:${PATH}"
 ENV PATH="/opt/cmdline-tools/bin:${PATH}"
 

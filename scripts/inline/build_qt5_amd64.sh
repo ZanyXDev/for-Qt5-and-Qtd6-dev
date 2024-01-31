@@ -7,6 +7,10 @@ trap "popd" EXIT HUP INT QUIT TERM
 export VERSION="5.15.10-amd64-lts-lgpl"
 mkdir -p /tmp/build_qt5 
 cd /tmp/build_qt5 
+
+#Solution is to configure qt with -feature-freetype -fontconfig to allow the use of system fonts
+#set QT_QPA_FONTDIR to something suitable, f.ex. /usr/share/fonts/truetype/dejavu (do export QT_QPA_FONTDIR=/usr/share/fonts/truetype/dejavu before running the application)
+
 /usr/local/src/qt5/configure -opensource -confirm-license -dbus -qt-zlib -qt-libjpeg -qt-libpng -qt-freetype -qt-pcre -qt-harfbuzz -release \
 -reduce-relocations -optimized-qmake -nomake tests -nomake examples -no-feature-d3d12 -skip 3d -skip activeqt -skip canvas3d -skip datavis3d -skip doc -skip gamepad -skip qtdocgallery \
 -skip lottie -skip macextras -skip charts -skip quick3d -skip script -skip scxml -skip speech -skip virtualkeyboard -skip qtwebengine -skip webchannel -skip webengine \

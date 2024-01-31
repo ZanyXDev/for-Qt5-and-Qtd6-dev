@@ -3,8 +3,7 @@ docker  pull ubuntu:22.04
 cd ../base
 
 docker  build \
-	--build-arg="LANG=ru-RU.UTF-8" \
-	--build-arg="QT_WEBKIT=y" \
-	--build-arg="QT_WEBENGINE=y" \
+	--build-arg="QT_WEBKIT=n" \
+	--build-arg="QT_WEBENGINE=n" \
 	--platform=linux/amd64 \
-	--tag=zanyxdev/base_ubuntu_22.04_lts:latest  .
+	--tag=zanyxdev/base_ubuntu_22.04_lts:without_web  .
