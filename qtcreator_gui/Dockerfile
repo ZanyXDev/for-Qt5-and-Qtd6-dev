@@ -25,6 +25,7 @@ ENV QML2_IMPORT_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/qml"
 ENV OPENSSL_ROOT_DIR="/opt/android_openssl/ssl_1.1"
 ENV DISPLAY :0
 ENV PERSIST=1
+ENV QT_QPA_FONTDIR="/usr/share/fonts/truetype"
 
 # +Timezone (если надо на этапе сборки)
 ENV TZ Europe/Moscow
@@ -63,5 +64,6 @@ RUN set -eux; \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
     
 USER developer
+ENV xdg_runtime_dir=/run/user/"${USER_ID}"
 
 ENTRYPOINT [ "/bin/bash", "-l", "-c" ]
