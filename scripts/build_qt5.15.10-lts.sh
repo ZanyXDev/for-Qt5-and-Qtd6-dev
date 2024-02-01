@@ -61,12 +61,11 @@ git clone --depth 1 "$REPOSRC" "$LOCALREPO" 2> /dev/null || (git -C "$LOCALREPO"
 IMAGE_NAME="zanyxdev/qt5-toolchain:latest"      
 echo -e "${green}Build Qt5.15.10-amd64-lts-lgpl tools.${reset}"   
 
-docker run \
+echo docker run \
       -v ${SDK_VOLUME_NAME}:/usr/local/src:ro \
 	-v ${QT5_VOLUME_NAME}:/opt/Qt \
 	  -v $(pwd)/inline/build_qt5_amd64.sh:/root/build_qt5.sh  \
-      -ti --rm ${IMAGE_NAME} bash 
-#/root/build_qt5.sh
+      -ti --rm ${IMAGE_NAME} /root/build_qt5.sh
       
 echo -e "${green}Update android-sdk tools [minimum images] ${reset}"      
 
@@ -77,11 +76,10 @@ echo docker run \
       -ti --rm ${IMAGE_NAME} /root/get_androidsdk.sh
 
 echo -e "${blue}Build Qt5.15.10-android-lts-lgpl tools.${reset}"  
-echo docker run \
+docker run \
       -v ${SDK_VOLUME_NAME}:/usr/local/src:ro \
 	  -v ${QT5_VOLUME_NAME}:/opt/Qt \
 	  -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
 	  -v $(pwd)/inline/build_qt5_android.sh:/root/build_android.sh  \
-      -ti --rm ${IMAGE_NAME}  bash
-#/root/build_android.sh 
+      -ti --rm ${IMAGE_NAME}  /root/build_android.sh 
 exit 0       	  

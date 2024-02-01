@@ -17,7 +17,7 @@ chmod 777 $XAUTH
 SRC_VOLUME_NAME="source-storage"
 SDK_VOLUME_NAME="androidsdk-storage"
 QT5_VOLUME_NAME="qt5-binary-storage"
-mkdir "$HOME"/docker_dev_home
+#mkdir "$HOME"/docker_dev_home
   
 docker run --rm -it \
 	-e "BUILD_TAG=${BUILD_TAG}" \
@@ -27,6 +27,6 @@ docker run --rm -it \
     -v ${SRC_VOLUME_NAME}:/usr/local/src:ro \
 	-v ${SDK_VOLUME_NAME}:/opt/android-sdk \
 	-v ${QT5_VOLUME_NAME}:/opt/Qt \
-	--device=/dev/dri \
+	--device=/dev/dri:/dev/dri \
 	-e XAUTHORITY=$XAUTH  \
 	zanyxdev/qtcreator_gui:latest bash
