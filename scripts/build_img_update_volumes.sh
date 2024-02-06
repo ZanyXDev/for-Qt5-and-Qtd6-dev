@@ -33,7 +33,7 @@ clear
 echo -e "------------------------${red}Docker pull images from hub.docker.com${reset}---------------------------"
 QT_VERSION="v5.15.10-lts-lgpl"
 SRC_VOLUME_NAME="${QT_VERSION}-src-volume"
-SDK_VOLUME_NAME="${QT_VERSION}-androidsdk-volume"
+SDK_VOLUME_NAME="${QT_VERSION}-android-sdk-volume"
 OPT_VOLUME_NAME="${QT_VERSION}-opt-volume"
 
 docker pull bitnami/git:latest
@@ -102,6 +102,7 @@ fi
  
 docker run \
 	  -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
+	  -v  ${SRC_VOLUME_NAME}:/usr/local/src \
 	  -v $(pwd)/get_androidsdk.sh:/root/get_androidsdk.sh  \
       -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/get_androidsdk.sh $(id -u ${USER}) $(id -g ${USER})
 
