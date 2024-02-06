@@ -87,7 +87,7 @@ else
         --build-arg="LANG=ru-RU.UTF-8" \
 	    --build-arg="TZ=Europe/Moscow" \
 	    --platform=linux/amd64 \
-	    --tag=zanyxdev/qt5-toolchain:latest .
+	    --tag=${TOOLCHAIN_IMAGE_NAME} .
 fi
 
 
