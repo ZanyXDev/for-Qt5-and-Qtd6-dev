@@ -31,15 +31,37 @@ function download {
 set -e;
 clear
 echo -e "------------------------${red}Docker pull images from hub.docker.com${reset}---------------------------"
-TAG="5.15.10-lts-lgpl"
+QT_VERSION="v5.15.10-lts-lgpl"
+SRC_VOLUME_NAME="${QT_VERSION}-src-volume"
+SDK_VOLUME_NAME="${QT_VERSION}-androidsdk-volume"
+OPT_VOLUME_NAME="${QT_VERSION}-opt-volume"
 
 docker pull bitnami/git:latest
 docker pull bash:latest
 docker pull ubuntu:22.04
 
-echo -e "-----------------${blue}check exist and dowload files from github.com${reset}---------------------------"
+echo -e "-----------------${blue}check exist and dowloads files from github.com${reset}---------------------------"
 
 if ! [ -f qt5_git_clone.sh ]; then
-  echo "File does not exist."
+  echo "File qt5_git_clone.sh ${red}does not exist${reset}. Now downloading..."
+  download https://raw.githubusercontent.com/ZanyXDev/for-Qt5-and-Qtd6-dev/main/scripts/qt5_git_clone.sh qt5_git_clone.sh
+  chmod +x qt5_git_clone.sh 
 fi
+
+docker run \
+       -v $(pwd)/qt5_git_clone.sh:/root/qt5_git_clone.sh  \
+	   -v  ${SRC_VOLUME_NAME}:/usr/local/src \
+       -ti --rm --name git bitnami/git:latest /root/qt5_git_clone.sh ${QT_VERSION} "https://invent.kde.org/qt/qt/qt5.git" "/usr/local/src/qt5"
+
+if ! [ -f openssl_git_clone.sh ]; then
+  echo "File openssl_git_clone.sh ${red}does not exist${reset}. Now downloading..."
+  download https://raw.githubusercontent.com/ZanyXDev/for-Qt5-and-Qtd6-dev/main/scripts/openssl_git_clone.sh openssl_git_clone.sh
+  chmod +x openssl_git_clone.sh
+fi       
+
+docker run \
+       -v $(pwd)/openssl_git_clone.sh:/root/openssl_git_clone.sh  \
+	   -v  ${SRC_VOLUME_NAME}:/usr/local/src \
+       -ti --rm --name git bitnami/git:latest /root/qt5_git_clone.sh "https://github.com/KDAB/android_openssl.git" "/usr/local/src/android_openssl"
+
 
