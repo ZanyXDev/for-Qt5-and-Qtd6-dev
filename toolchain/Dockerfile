@@ -4,8 +4,9 @@ FROM ubuntu:22.04 AS base_dev
 LABEL Description="This image based on Ubuntu 22.04,provides a base development \
                    environment (Linux and Android) for Qt developers"
 ARG QT_WEBKIT
-
 ARG QT_WEBENGINE
+ENV QT_WEBKIT=${QT_WEBKIT:-"n"}
+ENV QT_WEBENGINE=${QT_WEBENGINE:-"n"}
 
 RUN set -eux; \
     export DEBIAN_FRONTEND=noninteractive ;\
@@ -35,7 +36,7 @@ RUN set -eux; \
     apt-get -y install apt-transport-https  ca-certificates gnupg nano libssl3 openssl ;\
     apt list --installed >>/root/installed_deb.log ;\
     apt clean -y ;\
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*;
 #-----------------------  Download files  ----------------------------------------    
 FROM ubuntu:22.04 AS download
 #ARG <name>[=<default value>]
