@@ -3,6 +3,8 @@ set -e
 USER_ID=$1
 GROUP_ID=$2
 
+cp -r /usr/local/src/android_openssl/* /opt/android-sdk/android_openssl
+
 ANDROID_SDK_ROOT="/opt/android-sdk"
 ANDROID_NDK_ROOT="/opt/android-sdk/ndk"
 

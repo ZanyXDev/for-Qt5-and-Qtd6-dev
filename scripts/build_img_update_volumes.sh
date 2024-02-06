@@ -66,11 +66,11 @@ docker run \
        -ti --rm --name git bitnami/git:latest /root/openssl_git_clone.sh "https://github.com/KDAB/android_openssl.git" "/usr/local/src/android_openssl"
 
 TOOLCHAIN_IMAGE_NAME="zanyxdev/qt5-toolchain:${QT_VERSION}" 
-echo -e "-----------------${blue}check Docker image [${TOOLCHAIN_IMAGE_NAME}]{reset}---------------------------"
+echo -e "-----------------${blue}check Docker image [${TOOLCHAIN_IMAGE_NAME}]${reset}---------------------------"
 
 if docker image inspect $TOOLCHAIN_IMAGE_NAME >/dev/null 2>&1; then
     echo -e "Image ${green} ${TOOLCHAIN_IMAGE_NAME} exists local, update.${reset}"
-    docker pull ${TOOLCHAIN_IMAGE_NAME}
+    #docker pull ${TOOLCHAIN_IMAGE_NAME}
 else
     echo -e "Image ${green} ${TOOLCHAIN_IMAGE_NAME} ${red}don't exists local, ${green}build.${reset}"
     if [ -d ../toolchain ]; then
@@ -89,6 +89,21 @@ else
 	    --platform=linux/amd64 \
 	    --tag=${TOOLCHAIN_IMAGE_NAME} .
 fi
+
+echo -e "-----------------${green} get android-sdk ${reset}---------------------------"
+
+echo -e "${green}Update android-sdk tools [minimum images] ${reset}"      
+
+if ! [ -f get_androidsdk.sh ]; then
+  echo -e "File get_androidsdk.sh ${red}does not exist${reset}. Now downloading..."
+  download https://raw.githubusercontent.com/ZanyXDev/for-Qt5-and-Qtd6-dev/main/scripts/get_androidsdk.sh get_androidsdk.sh
+  chmod +x get_androidsdk.sh
+fi   
+ 
+docker run \
+	  -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
+	  -v $(pwd)/get_androidsdk.sh:/root/get_androidsdk.sh  \
+      -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/get_androidsdk.sh $(id -u ${USER}) $(id -g ${USER})
 
 
 
