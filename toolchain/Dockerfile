@@ -20,7 +20,8 @@ RUN set -eux; \
     echo "Mesa-specific OpenGL extensions" >>/root/installed_deb.log;\
     apt-get -y install mesa-common-dev libgl1-mesa-dev ;\ 
     echo "Qt Multimedia You'll need at least alsa-lib [>= 1.0.15] and gstreamer [>=0.10.24] with the base-plugins package."  >>/root/installed_deb.log;\
-    apt-get -y install libasound2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev libgstreamer-plugins-bad1.0-dev ;\
+    apt-get -y install  libpulse-dev libasound2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev libgstreamer-plugins-bad1.0-dev ;\
+    
     echo "QDoc Documentation Generator Tool Ubuntu/Debian " >>/root/installed_deb.log;\
     apt-get -y install clang libclang-dev ;\
     if ["$QT_WEBKIT" = "y"]; then \
@@ -30,9 +31,11 @@ RUN set -eux; \
     if [ "$QT_WEBENGINE" = "y" ]; then \
         echo "Qt WebEngine Ubuntu/Debian" >>/root/installed_deb.log;\	
         apt-get -y install libxcursor-dev libxcomposite-dev libxdamage-dev libxrandr-dev libxtst-dev libxss-dev libdbus-1-dev libevent-dev \
-	                   libfontconfig1-dev libcap-dev libpulse-dev libudev-dev libpci-dev libnss3-dev libasound2-dev libegl1-mesa-dev \
+	                   libcap-dev libpulse-dev libudev-dev libpci-dev libnss3-dev libasound2-dev libegl1-mesa-dev \
 			           gperf bison nodejs; \
     fi; \      
+    echo "Fontconfig library"; \
+    apt-get install -y libfontconfig1-dev fontconfig;\
     apt-get -y install apt-transport-https  ca-certificates gnupg nano libssl3 openssl ;\
     apt list --installed >>/root/installed_deb.log ;\
     apt clean -y ;\
