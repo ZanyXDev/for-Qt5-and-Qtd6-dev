@@ -63,6 +63,8 @@ chmod +x get_androidsdk.sh
 download https://raw.githubusercontent.com/ZanyXDev/for-Qt5-and-Qtd6-dev/main/scripts/build_qt5_amd64.sh build_qt5_amd64.sh
 chmod +x build_qt5_amd64.sh 
 
+download https://raw.githubusercontent.com/ZanyXDev/for-Qt5-and-Qtd6-dev/main/scripts/build_qt5_android.sh build_qt5_android.sh
+chmod +x build_qt5_android.sh
 #-------------------------------------------------------------------------------
 docker run \
        -v $(pwd)/qt5_git_clone.sh:/root/qt5_git_clone.sh  \
@@ -115,6 +117,13 @@ docker run \
 	  -v $(pwd)/build_qt5_amd64.sh:/root/build_qt5_amd64.sh  \
       -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/build_qt5_amd64.sh "5.15.10-amd64-lts-lgpl" $(id -u ${USER}) $(id -g ${USER}) ${DEBUG_MODE}
 
+docker run \
+	  -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
+	  -v ${QT5_OPT_VOLUME_NAME}:/opt/Qt \
+	  -v ${SRC_VOLUME_NAME}:/usr/local/src:ro \
+	  -v $(pwd)/build_qt5_android.sh:/root/build_qt5_android.sh  \
+      -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/build_qt5_android.sh "5.15.10-android-lts-lgpl" $(id -u ${USER}) $(id -g ${USER})  ${DEBUG_MODE}
+      
 #Troubleshooting
 #Enabling the logging categories under qt.qpa is a good idea in general. This will show some debug prints both from eglfs and the input handlers.
 #export QT_LOGGING_RULES=qt.qpa.*=true

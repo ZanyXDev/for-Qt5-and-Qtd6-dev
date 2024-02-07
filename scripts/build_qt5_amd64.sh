@@ -24,5 +24,5 @@ make -j $(nproc) install
  
 cp make.log ${QT_PATH}/build_qt/make.log
 cp config.summary ${QT_PATH}/build_qt/config.summary 
-chown -R $USER_ID:$GROUP_ID ${QT_PATH}/build_qt
+chown -R $USER_ID:$GROUP_ID ${QT_PATH}
 
