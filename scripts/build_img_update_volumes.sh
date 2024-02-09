@@ -38,16 +38,18 @@ set -e;
 clear
 echo -e "------------------------${red}Docker pull images from hub.docker.com${reset}---------------------------"
 QT_VERSION="v5.15.10-lts-lgpl"
+
 SRC_VOLUME_NAME="${QT_VERSION}-src-volume"
 SDK_VOLUME_NAME="${QT_VERSION}-android-sdk-volume"
 QT5_OPT_VOLUME_NAME="${QT_VERSION}-opt-volume"
+#Том данных , чтобы данные могли сохраняться между компиляциями/сборками
+CCACHE_VOLUME="${QT_VERSION}-ccache-volume"
+
 TOOLCHAIN_IMAGE_NAME="zanyxdev/qt5-toolchain:${QT_VERSION}" 
 QTCREATOR_IMAGE_NAME="zanyxdev/qt5-qtcreator:v12.0.0" 
-DEBUG_MODE=y
 BASE_DIR=$(pwd)
 
 docker pull bitnami/git:latest
-docker pull bash:latest
 docker pull ubuntu:22.04
 docker pull eclipse-temurin:17 
 
@@ -103,26 +105,38 @@ fi
 
 echo -e "${green}Update android-sdk tools [minimum images] ${reset}"       
 docker run \
+       --env "USER_ID=$(id -u ${USER})"       \
+       --env "GROUP_ID=$(id -g ${USER})"       \
 	  -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
 	  -v ${SRC_VOLUME_NAME}:/usr/local/src \
 	  -v $(pwd)/get_androidsdk.sh:/root/get_androidsdk.sh  \
-      -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/get_androidsdk.sh $(id -u ${USER}) $(id -g ${USER})
+      -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/get_androidsdk.sh
 
 echo -e "-----------------${green} Build QT5 ${QT_VERSION} from source amd64-target ${reset}---------------------------"
 
 docker run \
+       --env "QT_PATH=/opt/Qt/5.15.10-amd64-lts-lgpl" \
+       --env "USER_ID=$(id -u ${USER})"       \
+       --env "GROUP_ID=$(id -g ${USER})" \
+       --env "CCACHE_DIR=/ccache" \
+      -v ${CCACHE_VOLUME}:/ccache \
 	  -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
 	  -v ${QT5_OPT_VOLUME_NAME}:/opt/Qt \
 	  -v ${SRC_VOLUME_NAME}:/usr/local/src:ro \
 	  -v $(pwd)/build_qt5_amd64.sh:/root/build_qt5_amd64.sh  \
-      -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/build_qt5_amd64.sh "5.15.10-amd64-lts-lgpl" $(id -u ${USER}) $(id -g ${USER}) ${DEBUG_MODE}
+      -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/build_qt5_amd64.sh
 
 docker run \
+       --env "QT_PATH=/opt/Qt/5.15.10-android-lts-lgpl" \
+       --env "USER_ID=$(id -u ${USER})"       \
+       --env "GROUP_ID=$(id -g ${USER})"       \
+       --env "CCACHE_DIR=/ccache" \ 
+      -v ${CCACHE_VOLUME}:/ccache \
 	  -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
 	  -v ${QT5_OPT_VOLUME_NAME}:/opt/Qt \
 	  -v ${SRC_VOLUME_NAME}:/usr/local/src:ro \
 	  -v $(pwd)/build_qt5_android.sh:/root/build_qt5_android.sh  \
-      -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/build_qt5_android.sh "5.15.10-android-lts-lgpl" $(id -u ${USER}) $(id -g ${USER})  ${DEBUG_MODE}
+      -ti --rm ${TOOLCHAIN_IMAGE_NAME} echo /root/build_qt5_android.sh
  
  
 echo -e "-----------------${green} Build image Qtcreator and toolchain ${reset}---------------------------" 
@@ -131,12 +145,12 @@ if docker image inspect $TQTCREATOR_IMAGE_NAME >/dev/null 2>&1; then
     #docker pull ${TOOLCHAIN_IMAGE_NAME}
 else
     echo -e "Image ${green} ${QTCREATOR_IMAGE_NAME} ${red}don't exists local, ${green}build.${reset}"   
-    docker  build \
+    echo docker  build \
 	    --build-arg="QT_VERSION=5.15.10" \
         --build-arg="LANG=ru-RU.UTF-8" \
 	    --build-arg="TZ=Europe/Moscow" \
 	    --platform=linux/amd64 \
-	    --tag=${TOOLCHAIN_IMAGE_NAME} .
+	    --tag=${QTCREATOR_IMAGE_NAME} .
 fi
 
       

@@ -1,0 +1,9 @@
+MESA: error: Failed to query drm device.
+libGL error: glx: failed to create dri3 screen
+libGL error: failed to load driver: crocus
+libGL error: failed to open /dev/dri/card0: No such file or directory
+libGL error: failed to load driver: crocus
+
+build app
+/usr/bin/ld: warning: libicui18n.so.66, needed by /opt/Qt-amd64-5.15.10-lts-lgpl/lib/libQt5Core.so, not found (try using -rpath or -rpath-link)
+/usr/bin/ld: warning: libicuuc.so.66, needed by /opt/Qt-amd64-5.15.10-lts-lgpl/lib/libQt5Core.so, not found (try using -rpath or -rpath-lin

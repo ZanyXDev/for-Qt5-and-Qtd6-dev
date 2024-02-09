@@ -1,7 +1,4 @@
 #!/bin/bash
-set -e
-USER_ID=$1
-GROUP_ID=$2
 
 echo "Temp update. not save in image"
 apt-get -y update  
