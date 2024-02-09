@@ -42,7 +42,9 @@ SRC_VOLUME_NAME="${QT_VERSION}-src-volume"
 SDK_VOLUME_NAME="${QT_VERSION}-android-sdk-volume"
 QT5_OPT_VOLUME_NAME="${QT_VERSION}-opt-volume"
 TOOLCHAIN_IMAGE_NAME="zanyxdev/qt5-toolchain:${QT_VERSION}" 
+QTCREATOR_IMAGE_NAME="zanyxdev/qt5-qtcreator:v12.0.0" 
 DEBUG_MODE=y
+BASE_DIR=$(pwd)
 
 docker pull bitnami/git:latest
 docker pull bash:latest
@@ -65,7 +67,15 @@ chmod +x build_qt5_amd64.sh
 
 download https://raw.githubusercontent.com/ZanyXDev/for-Qt5-and-Qtd6-dev/main/scripts/build_qt5_android.sh build_qt5_android.sh
 chmod +x build_qt5_android.sh
+
+cd ${BASE_DIR} && cd ../
+[[ -d toolchain ]] || mkdir toolchain    
+[[ -d gui ]] || mkdir gui    
+download https://raw.githubusercontent.com/ZanyXDev/for-Qt5-and-Qtd6-dev/main/toolchain/Dockerfile toolchain/Dockerfile    
+download https://raw.githubusercontent.com/ZanyXDev/for-Qt5-and-Qtd6-dev/main/gui/Dockerfile gui/Dockerfile   
+ 
 #-------------------------------------------------------------------------------
+cd ${BASE_DIR}
 docker run \
        -v $(pwd)/qt5_git_clone.sh:/root/qt5_git_clone.sh  \
 	   -v  ${SRC_VOLUME_NAME}:/usr/local/src \
@@ -83,32 +93,22 @@ if docker image inspect $TOOLCHAIN_IMAGE_NAME >/dev/null 2>&1; then
     #docker pull ${TOOLCHAIN_IMAGE_NAME}
 else
     echo -e "Image ${green} ${TOOLCHAIN_IMAGE_NAME} ${red}don't exists local, ${green}build.${reset}"
-    if [ -d ../toolchain ]; then
-        echo -e "${green}Directory exists.${reset}"
-        else mkdir ../toolchain
-    fi
-    cd ../toolchain
-    
-    download https://raw.githubusercontent.com/ZanyXDev/for-Qt5-and-Qtd6-dev/main/toolchain/Dockerfile Dockerfile    
-    
     docker  build \
 	    --build-arg="QT_VERSION=5.15.10" \
         --build-arg="LANG=ru-RU.UTF-8" \
 	    --build-arg="TZ=Europe/Moscow" \
 	    --platform=linux/amd64 \
 	    --tag=${TOOLCHAIN_IMAGE_NAME} .
-	cd ../    
 fi
 
-echo -e "${green}Update android-sdk tools [minimum images] ${reset}"      
- 
+echo -e "${green}Update android-sdk tools [minimum images] ${reset}"       
 docker run \
 	  -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
 	  -v ${SRC_VOLUME_NAME}:/usr/local/src \
 	  -v $(pwd)/get_androidsdk.sh:/root/get_androidsdk.sh  \
       -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/get_androidsdk.sh $(id -u ${USER}) $(id -g ${USER})
 
-echo -e "-----------------${green} Build QT5 $${QT_VERSION} from source amd64-target ${reset}---------------------------"
+echo -e "-----------------${green} Build QT5 ${QT_VERSION} from source amd64-target ${reset}---------------------------"
 
 docker run \
 	  -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
@@ -123,6 +123,23 @@ docker run \
 	  -v ${SRC_VOLUME_NAME}:/usr/local/src:ro \
 	  -v $(pwd)/build_qt5_android.sh:/root/build_qt5_android.sh  \
       -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/build_qt5_android.sh "5.15.10-android-lts-lgpl" $(id -u ${USER}) $(id -g ${USER})  ${DEBUG_MODE}
+ 
+ 
+echo -e "-----------------${green} Build image Qtcreator and toolchain ${reset}---------------------------" 
+if docker image inspect $TQTCREATOR_IMAGE_NAME >/dev/null 2>&1; then
+    echo -e "Image ${green} ${QTCREATOR_IMAGE_NAME} exists local, update.${reset}"
+    #docker pull ${TOOLCHAIN_IMAGE_NAME}
+else
+    echo -e "Image ${green} ${QTCREATOR_IMAGE_NAME} ${red}don't exists local, ${green}build.${reset}"   
+    docker  build \
+	    --build-arg="QT_VERSION=5.15.10" \
+        --build-arg="LANG=ru-RU.UTF-8" \
+	    --build-arg="TZ=Europe/Moscow" \
+	    --platform=linux/amd64 \
+	    --tag=${TOOLCHAIN_IMAGE_NAME} .
+fi
+
+      
       
 #Troubleshooting
 #Enabling the logging categories under qt.qpa is a good idea in general. This will show some debug prints both from eglfs and the input handlers.
