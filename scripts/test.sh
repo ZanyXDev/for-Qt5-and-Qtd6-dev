@@ -11,14 +11,12 @@ CCACHE_VOLUME="${QT_VERSION}-ccache-volume"
 BASE_DIR=$(pwd)
 
 cd ${BASE_DIR}
-echo docker run \
-       --env "QT_PATH=/opt/Qt/5.15.10-amd64-lts-lgpl" \
-       --env "USER_ID=$(id -u ${USER})"       \
-       --env "GROUP_ID=$(id -g ${USER})" \
-       --env "CCACHE_DIR=/ccache" \
-      -v ${CCACHE_VOLUME}:/ccache \
-	  -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
-	  -v ${QT5_OPT_VOLUME_NAME}:/opt/Qt \
-	  -v ${SRC_VOLUME_NAME}:/usr/local/src:ro \
-	  -v $(pwd)/build_qt5_amd64.sh:/root/build_qt5_amd64.sh  \
-      -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/build_qt5_amd64.sh
+cd ../gui
+    docker  build \
+            --build-arg="QT_VERSION=5.15.10" \
+        --build-arg="LANG=ru-RU.UTF-8" \
+            --build-arg="TZ=Europe/Moscow" \
+    --build-arg="USER_ID=$(id -u ${USER})"       \
+       --build-arg="GROUP_ID=$(id -g ${USER})"       \
+            --platform=linux/amd64 \
+            --tag=${QTCREATOR_IMAGE_NAME} .

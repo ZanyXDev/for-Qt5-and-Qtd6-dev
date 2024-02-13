@@ -97,7 +97,7 @@ else
     echo -e "Image ${green} ${TOOLCHAIN_IMAGE_NAME} ${red}don't exists local, ${green}build.${reset}"
     docker  build \
 	    --build-arg="QT_VERSION=5.15.10" \
-        --build-arg="LANG=ru-RU.UTF-8" \
+	    --build-arg="LANG=ru-RU.UTF-8" \
 	    --build-arg="TZ=Europe/Moscow" \
 	    --platform=linux/amd64 \
 	    --tag=${TOOLCHAIN_IMAGE_NAME} .
@@ -120,23 +120,23 @@ docker run \
        --env "GROUP_ID=$(id -g ${USER})" \
        --env "CCACHE_DIR=/ccache" \
       -v ${CCACHE_VOLUME}:/ccache \
-	  -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
-	  -v ${QT5_OPT_VOLUME_NAME}:/opt/Qt \
-	  -v ${SRC_VOLUME_NAME}:/usr/local/src:ro \
-	  -v $(pwd)/build_qt5_amd64.sh:/root/build_qt5_amd64.sh  \
+      -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
+      -v ${QT5_OPT_VOLUME_NAME}:/opt/Qt \
+      -v ${SRC_VOLUME_NAME}:/usr/local/src:ro \
+      -v $(pwd)/build_qt5_amd64.sh:/root/build_qt5_amd64.sh  \
       -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/build_qt5_amd64.sh
 
-docker run \
+ docker run \
        --env "QT_PATH=/opt/Qt/5.15.10-android-lts-lgpl" \
        --env "USER_ID=$(id -u ${USER})"       \
        --env "GROUP_ID=$(id -g ${USER})"       \
-       --env "CCACHE_DIR=/ccache" \ 
-      -v ${CCACHE_VOLUME}:/ccache \
-	  -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
-	  -v ${QT5_OPT_VOLUME_NAME}:/opt/Qt \
-	  -v ${SRC_VOLUME_NAME}:/usr/local/src:ro \
-	  -v $(pwd)/build_qt5_android.sh:/root/build_qt5_android.sh  \
-      -ti --rm ${TOOLCHAIN_IMAGE_NAME} echo /root/build_qt5_android.sh
+       --env "CCACHE_DIR=/ccache" \
+       -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
+       -v ${QT5_OPT_VOLUME_NAME}:/opt/Qt \
+       -v ${SRC_VOLUME_NAME}:/usr/local/src:ro \
+       -v $(pwd)/build_qt5_android.sh:/root/build_qt5_android.sh  \
+       -v ${CCACHE_VOLUME}:/ccache \
+      -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/build_qt5_android.sh
  
  
 echo -e "-----------------${green} Build image Qtcreator and toolchain ${reset}---------------------------" 
@@ -145,18 +145,15 @@ if docker image inspect $TQTCREATOR_IMAGE_NAME >/dev/null 2>&1; then
     #docker pull ${TOOLCHAIN_IMAGE_NAME}
 else
     echo -e "Image ${green} ${QTCREATOR_IMAGE_NAME} ${red}don't exists local, ${green}build.${reset}"   
-    echo docker  build \
-	    --build-arg="QT_VERSION=5.15.10" \
-        --build-arg="LANG=ru-RU.UTF-8" \
-	    --build-arg="TZ=Europe/Moscow" \
-	    --platform=linux/amd64 \
-	    --tag=${QTCREATOR_IMAGE_NAME} .
+    cd ${BASE_DIR} && cd ../gui
+
+   [ -d "$HOME"/docker_dev_home ] && rm -R -f "$HOME"/docker_dev_home
+
+    docker  build \
+            	--build-arg="QT_VERSION=5.15.10" \
+        	--build-arg="LANG=ru-RU.UTF-8" \
+            	--build-arg="TZ=Europe/Moscow" \
+    		--build-arg="USER_ID=$(id -u ${USER})"       \
+	        --build-arg="GROUP_ID=$(id -g ${USER})"       \
+            	--tag=${QTCREATOR_IMAGE_NAME} .
 fi
-
-      
-      
-#Troubleshooting
-#Enabling the logging categories under qt.qpa is a good idea in general. This will show some debug prints both from eglfs and the input handlers.
-#export QT_LOGGING_RULES=qt.qpa.*=true
-
-

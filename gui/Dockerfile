@@ -1,5 +1,4 @@
-FROM zanyxdev/qt5-toolchain:latest AS base
-
+FROM zanyxdev/qt5-toolchain:v5.15.10-lts-lgpl AS base
 # Declare build parameters.
 ARG TARGETARCH
 ARG BUILD_TAG
@@ -58,7 +57,6 @@ RUN set -eux; \
       mkdir -p /home/developer; \
       chown ${USER_ID}:${GROUP_ID} -R /home/developer; \
     fi
-    
 RUN set -eux; \    
     sed -i -e 's/# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' /etc/locale.gen \
     && locale-gen
@@ -69,10 +67,17 @@ RUN set -eux; \
 USER developer
 
 ENV JAVA_HOME=/opt/java/openjdk
-RUN ${JAVA_HOME}/bin/keytool -genkey -keystore /home/developer/.android/debug.keystore -alias androiddebugkey \
+RUN \
+    echo ${JAVA_HOME}/bin/keytool -list -v -alias androiddebugkey -keystore ~/.android/debug.keystore
+
+RUN \
+     ${JAVA_HOME}/bin/keytool -genkey -keystore /home/developer/.android/debug.keystore -alias androiddebugkey \
     -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 \
     -dname 'CN=Android Debug,O=Android,C=US'
     
 ENV xdg_runtime_dir=/run/user/"${USER_ID}"
+#Troubleshooting
+#Enabling the logging categories under qt.qpa is a good idea in general. This will show some debug prints both from eglfs and the input handlers.
+ENV QT_LOGGING_RULES=qt.qpa.*=true
 
 ENTRYPOINT [ "/bin/bash", "-l", "-c" ]
