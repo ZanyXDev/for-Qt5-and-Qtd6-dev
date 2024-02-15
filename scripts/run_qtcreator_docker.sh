@@ -21,10 +21,9 @@ CCACHE_VOLUME="${QT_VERSION}-ccache-volume"
 
 [[ -d "$HOME"/docker_dev_home ]] || mkdir "$HOME"/docker_dev_home
 
-
 ./adb kill-server
 ./adb -a nodaemon server start &> /dev/null &
-  
+
 docker run --rm -it \
 	--mount type=bind,source="$HOME"/docker_dev_home,target=/home/developer \
 	-v $XSOCK:$XSOCK \

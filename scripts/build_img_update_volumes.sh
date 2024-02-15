@@ -140,6 +140,14 @@ docker run \
  
  
 echo -e "-----------------${green} Build image Qtcreator and toolchain ${reset}---------------------------" 
+[[ -d "$HOME"/docker_dev_home ]] || mkdir "$HOME"/docker_dev_home
+docker run \
+       --env "USER_ID=$(id -u ${USER})"       \
+       --env "GROUP_ID=$(id -g ${USER})"       \
+       -mount type=bind,source="$HOME"/docker_dev_home,target=/home/developer \
+	  -v $(pwd)/gen_key.sh:/root/gen_key.sh \
+      -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/gen_key.sh
+
 if docker image inspect $TQTCREATOR_IMAGE_NAME >/dev/null 2>&1; then
     echo -e "Image ${green} ${QTCREATOR_IMAGE_NAME} exists local, update.${reset}"
     #docker pull ${TOOLCHAIN_IMAGE_NAME}

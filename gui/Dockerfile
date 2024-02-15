@@ -67,14 +67,6 @@ RUN set -eux; \
 USER developer
 
 ENV JAVA_HOME=/opt/java/openjdk
-RUN \
-    echo ${JAVA_HOME}/bin/keytool -list -v -alias androiddebugkey -keystore ~/.android/debug.keystore
-
-RUN \
-     ${JAVA_HOME}/bin/keytool -genkey -keystore /home/developer/.android/debug.keystore -alias androiddebugkey \
-    -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 \
-    -dname 'CN=Android Debug,O=Android,C=US'
-    
 ENV xdg_runtime_dir=/run/user/"${USER_ID}"
 #Troubleshooting
 #Enabling the logging categories under qt.qpa is a good idea in general. This will show some debug prints both from eglfs and the input handlers.
