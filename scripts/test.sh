@@ -9,8 +9,8 @@ QTCREATOR_IMAGE_NAME="zanyxdev/qt5-qtcreator:v12.0.0"
 CCACHE_VOLUME="${QT_VERSION}-ccache-volume"
 BASE_DIR=$(pwd)
 
-[[ -d "$HOME"/docker_dev_home ]] || mkdir "$HOME"/docker_dev_home
-docker run \
+echo [[ -d "$HOME"/docker_dev_home ]] || mkdir "$HOME"/docker_dev_home
+echo docker run \
     --env "USER_ID=$(id -u ${USER})"  \
     --env "GROUP_ID=$(id -g ${USER})" \
     --mount type=bind,source="$HOME"/docker_dev_home,target=/home/developer \

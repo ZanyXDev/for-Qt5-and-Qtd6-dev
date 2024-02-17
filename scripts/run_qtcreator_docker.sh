@@ -24,7 +24,13 @@ CCACHE_VOLUME="${QT_VERSION}-ccache-volume"
 ./adb kill-server
 ./adb -a nodaemon server start &> /dev/null &
 
+#share pulse audio @sa https://github.com/mviereck/x11docker/wiki/Container-sound:-ALSA-or-Pulseaudio
+
 docker run --rm -it \
+	--env XDG_RUNTIME_DIR=/tmp/runtime-developer \
+	--env PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native \
+	 -v ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native \
+	 -v ~/.config/pulse/cookie:/developer/.config/pulse/cookie \
 	--mount type=bind,source="$HOME"/docker_dev_home,target=/home/developer \
 	-v $XSOCK:$XSOCK \
 	-v $XAUTH:$XAUTH \
@@ -35,5 +41,5 @@ docker run --rm -it \
 	-e XAUTHORITY=$XAUTH  \
 	--env "ANDROID_ADB_SERVER_ADDRESS=host.docker.internal" \
 	--add-host=host.docker.internal:host-gateway \
-	${QTCREATOR_IMAGE_NAME}  bash
-#/opt/qtcreator/bin/qtcreator.sh
+	${QTCREATOR_IMAGE_NAME} bash
+#/opt/qt-creator/bin/qtcreator.sh
