@@ -35,9 +35,10 @@ ENV TZ Europe/Moscow
 #Install X11 mini apps and  QtCreator libs
 RUN set -eux; \
     apt-get -y update \
-    && apt-get install -y locales sudo mc git  wget libncurses5 libdouble-conversion3 libc6 libc-bin \
+    && apt-get upgrade -y \
+    && apt-get install -y locales sudo wget git libncurses5 libdouble-conversion3 libc6 libc-bin \
+    && apt-get install -y pulseaudio \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/* 
-    
 RUN set -eux; \    
     wget -O /tmp/qtcreator.deb ${QTCREATOR_URL} \
     && dpkg -i /tmp/qtcreator.deb \
@@ -53,6 +54,8 @@ RUN set -eux; \
       useradd -u ${USER_ID} -g ${GROUP_ID} developer; \
       install -d -m 0755 -o developer -g ${GROUP_ID} /home/developer; \
       adduser developer sudo; \
+      echo "adding user developer to audio group"; \
+      adduser	developer audio; \
       echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers; \      
       mkdir -p /home/developer; \
       chown ${USER_ID}:${GROUP_ID} -R /home/developer; \
@@ -70,6 +73,6 @@ ENV JAVA_HOME=/opt/java/openjdk
 ENV xdg_runtime_dir=/run/user/"${USER_ID}"
 #Troubleshooting
 #Enabling the logging categories under qt.qpa is a good idea in general. This will show some debug prints both from eglfs and the input handlers.
-ENV QT_LOGGING_RULES=qt.qpa.*=true
+#ENV QT_LOGGING_RULES=qt.qpa.*=true
 
 ENTRYPOINT [ "/bin/bash", "-l", "-c" ]
