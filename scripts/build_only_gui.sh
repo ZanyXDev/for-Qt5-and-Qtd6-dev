@@ -5,8 +5,9 @@ SRC_VOLUME_NAME="${QT_VERSION}-src-volume"
 SDK_VOLUME_NAME="${QT_VERSION}-android-sdk-volume"
 QT5_OPT_VOLUME_NAME="${QT_VERSION}-opt-volume"
 TOOLCHAIN_IMAGE_NAME="zanyxdev/qt5-toolchain:${QT_VERSION}" 
-QTCREATOR_IMAGE_NAME="zanyxdev/qt5-qtcreator:v12.0.0" 
+QTCREATOR_IMAGE_NAME="zanyxdev/qt5-qtcreator:v13.0.0" 
 CCACHE_VOLUME="${QT_VERSION}-ccache-volume"
+QTCREATOR_URL="https://github.com/qt-creator/qt-creator/releases/download/v13.0.0/qtcreator-linux-x64-13.0.0.deb"
 BASE_DIR=$(pwd)
 
 echo [[ -d "$HOME"/docker_dev_home ]] || mkdir "$HOME"/docker_dev_home
@@ -23,6 +24,7 @@ docker  build \
     --build-arg="QT_VERSION=5.15.10" \
     --build-arg="LANG=ru-RU.UTF-8" \
     --build-arg="TZ=Europe/Moscow" \
+    --build-arg="QTCREATOR_URL=${QTCREATOR_URL}" \
     --build-arg="USER_ID=$(id -u ${USER})"       \
     --build-arg="GROUP_ID=$(id -g ${USER})"       \
     --platform=linux/amd64 \
