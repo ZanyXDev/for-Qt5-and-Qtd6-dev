@@ -70,6 +70,9 @@ chmod +x build_qt5_amd64.sh
 download https://raw.githubusercontent.com/ZanyXDev/for-Qt5-and-Qtd6-dev/main/scripts/build_qt5_android.sh build_qt5_android.sh
 chmod +x build_qt5_android.sh
 
+download https://raw.githubusercontent.com/ZanyXDev/for-Qt5-and-Qtd6-dev/main/scripts/run_qtcreator_docker.sh
+chmod +x run_qtcreator_docker.sh
+
 cd ${BASE_DIR} && cd ../
 [[ -d toolchain ]] || mkdir toolchain    
 [[ -d gui ]] || mkdir gui    
