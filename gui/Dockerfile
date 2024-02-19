@@ -6,6 +6,7 @@ ARG QT_VERSION
 ARG QTCREATOR_URL
 ARG USER_ID
 ARG GROUP_ID
+ARG QTCREATOR_URL
 
 # Set environment variables, see Readme.md
 ENV DEBIAN_FRONTEND="noninteractive" 
@@ -14,7 +15,7 @@ ENV LANG ru_RU.UTF-8
 ENV LANGUAGE ru_RU:ru
 ENV LC_LANG ru_RU.UTF-8
 ENV LC_ALL ru_RU.UTF-8
-ENV QTCREATOR_URL=${QTCREATOR_URL:-"https://github.com/qt-creator/qt-creator/releases/download/v12.0.0/qtcreator-linux-x64-12.0.0.deb"}
+ENV QTCREATOR_URL=${QTCREATOR_URL:-"https://github.com/qt-creator/qt-creator/releases/download/v12.0.0/qtcreator-linux-x64-13.0.0.deb"}
 ENV HOME /home/developer
 ENV PATH="${PATH}:/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/bin:/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/libexec:/opt/qtcreator/Tools/QtCreator/bin"
 ENV QT_HOST_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/"
@@ -68,6 +69,8 @@ RUN set -eux; \
 RUN set -eux; \    
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
     
+RUN chown -R $USER_ID:$GROUP_ID /opt/qt-creator
+
 USER developer
 
 ENV JAVA_HOME=/opt/java/openjdk

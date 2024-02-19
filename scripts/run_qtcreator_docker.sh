@@ -16,7 +16,7 @@ SRC_VOLUME_NAME="${QT_VERSION}-src-volume"
 SDK_VOLUME_NAME="${QT_VERSION}-android-sdk-volume"
 QT5_OPT_VOLUME_NAME="${QT_VERSION}-opt-volume"
 TOOLCHAIN_IMAGE_NAME="zanyxdev/qt5-toolchain:${QT_VERSION}" 
-QTCREATOR_IMAGE_NAME="zanyxdev/qt5-qtcreator:v12.0.0" 
+QTCREATOR_IMAGE_NAME="zanyxdev/qt5-qtcreator:v13.0.0" 
 CCACHE_VOLUME="${QT_VERSION}-ccache-volume"
 
 [[ -d "$HOME"/docker_dev_home ]] || mkdir "$HOME"/docker_dev_home
