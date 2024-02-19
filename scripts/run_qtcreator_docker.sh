@@ -30,7 +30,7 @@ docker run --rm -it \
 	--env XDG_RUNTIME_DIR=/tmp/runtime-developer \
 	--env PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native \
 	 -v ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native \
-	 -v ~/.config/pulse/cookie:/developer/.config/pulse/cookie \
+	 -v ~/.config/pulse/cookie:/home/developer/.config/pulse/cookie \
 	--mount type=bind,source="$HOME"/docker_dev_home,target=/home/developer \
 	-v $XSOCK:$XSOCK \
 	-v $XAUTH:$XAUTH \
