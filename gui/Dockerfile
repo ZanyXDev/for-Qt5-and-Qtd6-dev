@@ -38,6 +38,7 @@ RUN set -eux; \
     && apt-get upgrade -y \
     && apt-get install -y locales sudo wget git libncurses5 libdouble-conversion3 libc6 libc-bin \
     && apt-get install -y pulseaudio \
+    && apt-get install -y mc \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/* 
 RUN set -eux; \    
     wget -O /tmp/qtcreator.deb ${QTCREATOR_URL} \
