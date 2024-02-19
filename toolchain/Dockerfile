@@ -47,7 +47,7 @@ FROM ubuntu:22.04 AS download
 #ENV CONT_IMG_VER=${CONT_IMG_VER:-v1.0.0}
 ARG CMAKE_URL
 ARG CMDTOOLS_URL
-ENV CMAKE_URL=${CMAKE_URL:-"https://cmake.org/files/v3.28/cmake-3.28.1-linux-x86_64.tar.gz"}
+ENV CMAKE_URL=${CMAKE_URL:-"https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3.tar.gz"}
 ENV CMDTOOLS_URL=${CMDTOOLS_URL:-"https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip"}
 
 RUN set -eux; \
@@ -58,7 +58,7 @@ RUN set -eux; \
     apt clean -y ;\
     rm -rf /var/lib/apt/lists/*;
     
-#-----------------------  CMAKE 3.28.1  ----------------------------------------
+#-----------------------  CMAKE 3.28.3  ----------------------------------------
 RUN set -x                                                             \
     && wget -O /tmp/cmake.tar.gz ${CMAKE_URL}                          \
     && mkdir /opt/cmake                                                \
