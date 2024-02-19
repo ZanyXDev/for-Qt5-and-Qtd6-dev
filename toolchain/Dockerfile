@@ -21,7 +21,7 @@ RUN set -eux; \
     apt-get -y install mesa-common-dev libgl1-mesa-dev ;\ 
     echo "Qt Multimedia You'll need at least alsa-lib [>= 1.0.15] and gstreamer [>=0.10.24] with the base-plugins package."  >>/root/installed_deb.log;\
     apt-get -y install  libpulse-dev libasound2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev libgstreamer-plugins-bad1.0-dev ;\
-    
+    apt-get -y install  gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav; \
     echo "QDoc Documentation Generator Tool Ubuntu/Debian " >>/root/installed_deb.log;\
     apt-get -y install clang libclang-dev ;\
     if ["$QT_WEBKIT" = "y"]; then \
@@ -36,7 +36,7 @@ RUN set -eux; \
     fi; \      
     echo "Fontconfig library"; \
     apt-get install -y libfontconfig1-dev fontconfig;\
-    apt-get -y install apt-transport-https  ca-certificates gnupg nano libssl3 openssl ;\
+    apt-get install -y apt-transport-https  ca-certificates gnupg nano libssl3 openssl ;\
     apt list --installed >>/root/installed_deb.log ;\
     apt clean -y ;\
     rm -rf /var/lib/apt/lists/*;
