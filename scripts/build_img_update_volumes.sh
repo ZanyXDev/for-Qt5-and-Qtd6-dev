@@ -97,6 +97,7 @@ if docker image inspect $TOOLCHAIN_IMAGE_NAME >/dev/null 2>&1; then
     echo -e "Image ${green} ${TOOLCHAIN_IMAGE_NAME} exists local, update.${reset}"
     #docker pull ${TOOLCHAIN_IMAGE_NAME}
 else
+    cd ${BASE_DIR} && cd ../toolchain
     echo -e "Image ${green} ${TOOLCHAIN_IMAGE_NAME} ${red}don't exists local, ${green}build.${reset}"
     docker  build \
 	    --build-arg="QT_VERSION=5.15.10" \
@@ -104,6 +105,7 @@ else
 	    --build-arg="TZ=Europe/Moscow" \
 	    --platform=linux/amd64 \
 	    --tag=${TOOLCHAIN_IMAGE_NAME} .
+     cd ${BASE_DIR}
 fi
 
 echo -e "${green}Update android-sdk tools [minimum images] ${reset}"       
@@ -167,4 +169,5 @@ else
     		--build-arg="USER_ID=$(id -u ${USER})"       \
 	        --build-arg="GROUP_ID=$(id -g ${USER})"       \
             	--tag=${QTCREATOR_IMAGE_NAME} .
+     cd ${BASE_DIR}     
 fi
