@@ -46,7 +46,9 @@ QT5_OPT_VOLUME_NAME="${QT_VERSION}-opt-volume"
 CCACHE_VOLUME="${QT_VERSION}-ccache-volume"
 
 TOOLCHAIN_IMAGE_NAME="zanyxdev/qt5-toolchain:${QT_VERSION}" 
-QTCREATOR_IMAGE_NAME="zanyxdev/qt5-qtcreator:v12.0.0" 
+QTCREATOR_IMAGE_NAME="zanyxdev/qt5-qtcreator:v13.0.0" 
+QTCREATOR_URL="https://github.com/qt-creator/qt-creator/releases/download/v13.0.0/qtcreator-linux-x64-13.0.0.deb"
+
 BASE_DIR=$(pwd)
 
 docker pull bitnami/git:latest
@@ -97,6 +99,7 @@ if docker image inspect $TOOLCHAIN_IMAGE_NAME >/dev/null 2>&1; then
     echo -e "Image ${green} ${TOOLCHAIN_IMAGE_NAME} exists local, update.${reset}"
     #docker pull ${TOOLCHAIN_IMAGE_NAME}
 else
+    cd ${BASE_DIR} && cd ../toolchain
     echo -e "Image ${green} ${TOOLCHAIN_IMAGE_NAME} ${red}don't exists local, ${green}build.${reset}"
     docker  build \
 	    --build-arg="QT_VERSION=5.15.10" \
@@ -104,6 +107,7 @@ else
 	    --build-arg="TZ=Europe/Moscow" \
 	    --platform=linux/amd64 \
 	    --tag=${TOOLCHAIN_IMAGE_NAME} .
+	cd ${BASE_DIR}   
 fi
 
 echo -e "${green}Update android-sdk tools [minimum images] ${reset}"       
@@ -143,28 +147,21 @@ docker run \
  
  
 echo -e "-----------------${green} Build image Qtcreator and toolchain ${reset}---------------------------" 
-[[ -d "$HOME"/docker_dev_home ]] || mkdir "$HOME"/docker_dev_home
-docker run \
-       --env "USER_ID=$(id -u ${USER})"       \
-       --env "GROUP_ID=$(id -g ${USER})"       \
-       -mount type=bind,source="$HOME"/docker_dev_home,target=/home/developer \
-	  -v $(pwd)/gen_key.sh:/root/gen_key.sh \
-      -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/gen_key.sh
+echo [[ -d "$HOME"/docker_dev_home ]] || mkdir "$HOME"/docker_dev_home
+echo docker run \
+    --env "USER_ID=$(id -u ${USER})"  \
+    --env "GROUP_ID=$(id -g ${USER})" \
+    --mount type=bind,source="$HOME"/docker_dev_home,target=/home/developer \
+    -v $(pwd)/gen_key.sh:/root/gen_key.sh \
+    -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/gen_key.sh
 
-if docker image inspect $TQTCREATOR_IMAGE_NAME >/dev/null 2>&1; then
-    echo -e "Image ${green} ${QTCREATOR_IMAGE_NAME} exists local, update.${reset}"
-    #docker pull ${TOOLCHAIN_IMAGE_NAME}
-else
-    echo -e "Image ${green} ${QTCREATOR_IMAGE_NAME} ${red}don't exists local, ${green}build.${reset}"   
-    cd ${BASE_DIR} && cd ../gui
-
-   [ -d "$HOME"/docker_dev_home ] && rm -R -f "$HOME"/docker_dev_home
-
-    docker  build \
-            	--build-arg="QT_VERSION=5.15.10" \
-        	--build-arg="LANG=ru-RU.UTF-8" \
-            	--build-arg="TZ=Europe/Moscow" \
-    		--build-arg="USER_ID=$(id -u ${USER})"       \
-	        --build-arg="GROUP_ID=$(id -g ${USER})"       \
-            	--tag=${QTCREATOR_IMAGE_NAME} .
-fi
+cd ${BASE_DIR} && cd ../gui
+docker  build \
+    --build-arg="QT_VERSION=5.15.10" \
+    --build-arg="LANG=ru-RU.UTF-8" \
+    --build-arg="TZ=Europe/Moscow" \
+    --build-arg="QTCREATOR_URL=${QTCREATOR_URL}" \
+    --build-arg="USER_ID=$(id -u ${USER})"       \
+    --build-arg="GROUP_ID=$(id -g ${USER})"       \
+    --platform=linux/amd64 \
+    --tag=${QTCREATOR_IMAGE_NAME} .
