@@ -107,7 +107,7 @@ else
 	    --build-arg="TZ=Europe/Moscow" \
 	    --platform=linux/amd64 \
 	    --tag=${TOOLCHAIN_IMAGE_NAME} .
-	cd ${BASE_DIR}   
+     cd ${BASE_DIR}
 fi
 
 echo -e "${green}Update android-sdk tools [minimum images] ${reset}"       
@@ -155,13 +155,26 @@ echo docker run \
     -v $(pwd)/gen_key.sh:/root/gen_key.sh \
     -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/gen_key.sh
 
-cd ${BASE_DIR} && cd ../gui
-docker  build \
-    --build-arg="QT_VERSION=5.15.10" \
-    --build-arg="LANG=ru-RU.UTF-8" \
-    --build-arg="TZ=Europe/Moscow" \
-    --build-arg="QTCREATOR_URL=${QTCREATOR_URL}" \
-    --build-arg="USER_ID=$(id -u ${USER})"       \
-    --build-arg="GROUP_ID=$(id -g ${USER})"       \
-    --platform=linux/amd64 \
-    --tag=${QTCREATOR_IMAGE_NAME} .
+
+
+if docker image inspect ${QTCREATOR_IMAGE_NAME} >/dev/null 2>&1; then
+    echo -e "Image ${green} ${QTCREATOR_IMAGE_NAME} exists local, update.${reset}"
+    #docker pull ${TOOLCHAIN_IMAGE_NAME}
+else
+    echo -e "Image ${green} ${QTCREATOR_IMAGE_NAME} ${red}don't exists local, ${green}build.${reset}"   
+    cd ${BASE_DIR} && cd ../gui
+
+   [ -d "$HOME"/docker_dev_home ] && rm -R -f "$HOME"/docker_dev_home
+
+    docker  build \
+        --build-arg="QT_VERSION=5.15.10" \
+        --build-arg="LANG=ru-RU.UTF-8" \
+        --build-arg="TZ=Europe/Moscow" \
+        --build-arg="QTCREATOR_URL=${QTCREATOR_URL}" \
+        --build-arg="USER_ID=$(id -u ${USER})"       \
+        --build-arg="GROUP_ID=$(id -g ${USER})"       \
+        --platform=linux/amd64 \
+        --tag=${QTCREATOR_IMAGE_NAME} .
+     cd ${BASE_DIR}     
+fi
+
