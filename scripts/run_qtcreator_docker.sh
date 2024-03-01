@@ -26,20 +26,21 @@ CCACHE_VOLUME="${QT_VERSION}-ccache-volume"
 
 #share pulse audio @sa https://github.com/mviereck/x11docker/wiki/Container-sound:-ALSA-or-Pulseaudio
 
-docker run --rm -it \
+echo docker run --rm -it \
 	--env XDG_RUNTIME_DIR=/tmp/runtime-developer \
 	--env PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native \
-	 -v ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native \
-	 -v ~/.config/pulse/cookie:/home/developer/.config/pulse/cookie \
-	--mount type=bind,source="$HOME"/docker_dev_home,target=/home/developer \
-	-v $XSOCK:$XSOCK \
-	-v $XAUTH:$XAUTH \
-        -v ${SRC_VOLUME_NAME}:/usr/local/src:ro \
-	-v ${SDK_VOLUME_NAME}:/opt/android-sdk \
-	-v ${QT5_OPT_VOLUME_NAME}:/opt/Qt \
-	--device=/dev/dri:/dev/dri \
-	-e XAUTHORITY=$XAUTH  \
+	--env PULSE_COOKIE=/tmp/pulseaudio.cookie \
+	--env XAUTHORITY=$XAUTH \
 	--env "ANDROID_ADB_SERVER_ADDRESS=host.docker.internal" \
+	--device=/dev/dri:/dev/dri \
 	--add-host=host.docker.internal:host-gateway \
+	--volume ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native \
+	--volume ~/.config/pulse/cookie:/tmp/pulseaudio.cookie \
+	--volume $XSOCK:$XSOCK \
+	--volume $XAUTH:$XAUTH \
+    --volume ${SRC_VOLUME_NAME}:/usr/local/src:ro \
+	--volume ${SDK_VOLUME_NAME}:/opt/android-sdk \
+	--volume ${QT5_OPT_VOLUME_NAME}:/opt/Qt \
+	--mount type=bind,source="$HOME"/docker_dev_home,target=/home/developer \
 	${QTCREATOR_IMAGE_NAME} bash
 #/opt/qt-creator/bin/qtcreator.sh
