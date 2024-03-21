@@ -72,8 +72,8 @@ RUN set -eux; \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
     
 RUN set -eux; \ 
-    chown -R $USER_ID:$GROUP_ID /opt/qt-creator 
-    && chown -R $USER_ID:$GROUP_ID /opt/cmake
+    chown -R $USER_ID:$GROUP_ID /opt/qt-creator; \
+    chown -R $USER_ID:$GROUP_ID /opt/cmake
 
 # Install latest libusb
 RUN set -eux; \ 
