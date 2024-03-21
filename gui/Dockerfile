@@ -15,7 +15,7 @@ ENV LANG ru_RU.UTF-8
 ENV LANGUAGE ru_RU:ru
 ENV LC_LANG ru_RU.UTF-8
 ENV LC_ALL ru_RU.UTF-8
-ENV QTCREATOR_URL=${QTCREATOR_URL:-"https://github.com/qt-creator/qt-creator/releases/download/v12.0.0/qtcreator-linux-x64-13.0.0.deb"}
+ENV QTCREATOR_URL=${QTCREATOR_URL:-"https://github.com/qt-creator/qt-creator/releases/download/v12.0.2/qtcreator-linux-x64-12.0.2.deb"}
 ENV HOME /home/developer
 ENV PATH="${PATH}:/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/bin:/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/libexec:/opt/qtcreator/Tools/QtCreator/bin"
 ENV QT_HOST_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/"
@@ -42,6 +42,7 @@ RUN set -eux; \
     && apt-get install -y locales sudo wget git libncurses5 libdouble-conversion3 libc6 libc-bin \
     && apt-get install -y pulseaudio \
     && apt-get install -y mc \
+    && apt-get install -y autoconf libtool \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/* 
 RUN set -eux; \    
     wget -O /tmp/qtcreator.deb ${QTCREATOR_URL} \

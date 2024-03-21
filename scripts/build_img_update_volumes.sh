@@ -46,8 +46,8 @@ QT5_OPT_VOLUME_NAME="${QT_VERSION}-opt-volume"
 CCACHE_VOLUME="${QT_VERSION}-ccache-volume"
 
 TOOLCHAIN_IMAGE_NAME="zanyxdev/qt5-toolchain:${QT_VERSION}" 
-QTCREATOR_IMAGE_NAME="zanyxdev/qt5-qtcreator:v13.0.0" 
-QTCREATOR_URL="https://github.com/qt-creator/qt-creator/releases/download/v13.0.0/qtcreator-linux-x64-13.0.0.deb"
+QTCREATOR_IMAGE_NAME="zanyxdev/qt5-qtcreator:v12.0.2" 
+QTCREATOR_URL="https://github.com/qt-creator/qt-creator/releases/download/v12.0.2/qtcreator-linux-x64-12.0.2.deb"
 
 BASE_DIR=$(pwd)
 
