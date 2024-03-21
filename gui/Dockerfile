@@ -35,6 +35,8 @@ ENV TZ Europe/Moscow
   
 #Install X11 mini apps and  QtCreator libs
 RUN set -eux; \
+    echo "go-faster apt"; \
+    echo  'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages;\
     apt-get -y update \
     && apt-get upgrade -y \
     && apt-get install -y locales sudo wget git libncurses5 libdouble-conversion3 libc6 libc-bin \

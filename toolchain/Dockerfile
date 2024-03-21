@@ -9,6 +9,8 @@ ENV QT_WEBKIT=${QT_WEBKIT:-"n"}
 ENV QT_WEBENGINE=${QT_WEBENGINE:-"n"}
 
 RUN set -eux; \
+    echo "go-faster apt"; \
+    echo  'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages;\
     export DEBIAN_FRONTEND=noninteractive ;\
     apt-get -y update  ;\
     apt-get -y upgrade ;\
@@ -51,6 +53,8 @@ ENV CMAKE_URL=${CMAKE_URL:-"https://github.com/Kitware/CMake/releases/download/v
 ENV CMDTOOLS_URL=${CMDTOOLS_URL:-"https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip"}
 
 RUN set -eux; \
+    echo "go-faster apt"; \
+    echo  'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages;\
     export DEBIAN_FRONTEND=noninteractive ;\
     apt-get -y update  ;\
     apt-get -y upgrade ;\
