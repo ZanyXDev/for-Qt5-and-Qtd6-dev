@@ -69,7 +69,9 @@ RUN set -eux; \
 RUN set -eux; \    
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
     
-RUN chown -R $USER_ID:$GROUP_ID /opt/qt-creator
+RUN set -eux; \ 
+    chown -R $USER_ID:$GROUP_ID /opt/qt-creator 
+    && chown -R $USER_ID:$GROUP_ID /opt/cmake
 
 USER developer
 
