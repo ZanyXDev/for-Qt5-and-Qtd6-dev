@@ -75,6 +75,19 @@ RUN set -eux; \
     chown -R $USER_ID:$GROUP_ID /opt/qt-creator 
     && chown -R $USER_ID:$GROUP_ID /opt/cmake
 
+# Install latest libusb
+RUN set -eux; \ 
+    cd /usr/local/src;\
+    git clone -b v1.0.27 https://github.com/libusb/libusb; \
+    cd libusb; \
+    ./bootstrap.sh; \
+    ./configure; \
+    make; \
+    make install
+
+# Add libusb dans library path
+ENV LD_LIBRARY_PATH=/usr/local/lib
+
 USER developer
 
 ENV JAVA_HOME=/opt/java/openjdk
