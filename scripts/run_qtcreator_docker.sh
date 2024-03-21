@@ -26,7 +26,7 @@ CCACHE_VOLUME="${QT_VERSION}-ccache-volume"
 
 #share pulse audio @sa https://github.com/mviereck/x11docker/wiki/Container-sound:-ALSA-or-Pulseaudio
 
-echo docker run --rm -it \
+docker run --rm -it \
 	--env XDG_RUNTIME_DIR=/tmp/runtime-developer \
 	--env PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native \
 	--env PULSE_COOKIE=/tmp/pulseaudio.cookie \
@@ -38,7 +38,7 @@ echo docker run --rm -it \
 	--volume ~/.config/pulse/cookie:/tmp/pulseaudio.cookie \
 	--volume $XSOCK:$XSOCK \
 	--volume $XAUTH:$XAUTH \
-    --volume ${SRC_VOLUME_NAME}:/usr/local/src:ro \
+    	--volume ${SRC_VOLUME_NAME}:/usr/local/src:ro \
 	--volume ${SDK_VOLUME_NAME}:/opt/android-sdk \
 	--volume ${QT5_OPT_VOLUME_NAME}:/opt/Qt \
 	--mount type=bind,source="$HOME"/docker_dev_home,target=/home/developer \
