@@ -91,6 +91,8 @@ ENV LD_LIBRARY_PATH=/usr/local/lib
 
 USER developer
 
+WORKDIR /home/developer
+
 ENV JAVA_HOME=/opt/java/openjdk
 ENV xdg_runtime_dir=/run/user/"${USER_ID}"
 #Troubleshooting
