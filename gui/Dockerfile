@@ -1,8 +1,8 @@
-FROM zanyxdev/qt5-toolchain:v5.15.10-lts-lgpl AS base
+ARG QT_VERSION
+FROM zanyxdev/qt5-toolchain:v${QT_VERSION}-lts-lgpl AS base
 # Declare build parameters.
 ARG TARGETARCH
 ARG BUILD_TAG
-ARG QT_VERSION
 ARG QTCREATOR_URL
 ARG USER_ID
 ARG GROUP_ID

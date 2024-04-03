@@ -37,7 +37,8 @@ function download {
 set -e;
 clear
 echo -e "------------------------${red}Docker pull images from hub.docker.com${reset}---------------------------"
-QT_VERSION="v5.15.10-lts-lgpl"
+QT_VERSION="v5.15.13-lts-lgpl"
+QT_VERSION_SHORT="5.15.13"
 
 SRC_VOLUME_NAME="${QT_VERSION}-src-volume"
 SDK_VOLUME_NAME="${QT_VERSION}-android-sdk-volume"
@@ -102,7 +103,7 @@ else
     cd ${BASE_DIR} && cd ../toolchain
     echo -e "Image ${green} ${TOOLCHAIN_IMAGE_NAME} ${red}don't exists local, ${green}build.${reset}"
     docker  build \
-	    --build-arg="QT_VERSION=5.15.10" \
+	    --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
 	    --build-arg="LANG=ru-RU.UTF-8" \
 	    --build-arg="TZ=Europe/Moscow" \
 	    --platform=linux/amd64 \
@@ -122,7 +123,7 @@ docker run \
 echo -e "-----------------${green} Build QT5 ${QT_VERSION} from source amd64-target ${reset}---------------------------"
 
 docker run \
-       --env "QT_PATH=/opt/Qt/5.15.10-amd64-lts-lgpl" \
+       --env "QT_PATH=/opt/Qt/${QT_VERSION_SHORT}-amd64-lts-lgpl" \
        --env "USER_ID=$(id -u ${USER})"       \
        --env "GROUP_ID=$(id -g ${USER})" \
        --env "CCACHE_DIR=/ccache" \
@@ -134,7 +135,7 @@ docker run \
       -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/build_qt5_amd64.sh
 
  docker run \
-       --env "QT_PATH=/opt/Qt/5.15.10-android-lts-lgpl" \
+       --env "QT_PATH=/opt/Qt/${QT_VERSION_SHORT}-android-lts-lgpl" \
        --env "USER_ID=$(id -u ${USER})"       \
        --env "GROUP_ID=$(id -g ${USER})"       \
        --env "CCACHE_DIR=/ccache" \
@@ -167,7 +168,7 @@ else
    [ -d "$HOME"/docker_dev_home ] && rm -R -f "$HOME"/docker_dev_home
 
     docker  build \
-        --build-arg="QT_VERSION=5.15.10" \
+        --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
         --build-arg="LANG=ru-RU.UTF-8" \
         --build-arg="TZ=Europe/Moscow" \
         --build-arg="QTCREATOR_URL=${QTCREATOR_URL}" \
