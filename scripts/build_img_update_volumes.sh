@@ -179,3 +179,5 @@ else
      cd ${BASE_DIR}     
 fi
 
+echo -e "-----------------${red} remove volume  ${CCACHE_VOLUME}  ${reset}---------------------------" 
+docker volume rm ${CCACHE_VOLUME}

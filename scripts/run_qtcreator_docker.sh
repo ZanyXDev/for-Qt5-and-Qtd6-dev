@@ -11,7 +11,7 @@ XAUTH=/tmp/.docker.xauth
 xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
 chmod 777 $XAUTH
 
-QT_VERSION="v5.15.10-lts-lgpl"
+QT_VERSION="v5.15.13-lts-lgpl"
 SRC_VOLUME_NAME="${QT_VERSION}-src-volume"
 SDK_VOLUME_NAME="${QT_VERSION}-android-sdk-volume"
 QT5_OPT_VOLUME_NAME="${QT_VERSION}-opt-volume"
@@ -43,6 +43,7 @@ docker run --rm -it \
     	--volume ${SRC_VOLUME_NAME}:/usr/local/src:ro \
 	--volume ${SDK_VOLUME_NAME}:/opt/android-sdk \
 	--volume ${QT5_OPT_VOLUME_NAME}:/opt/Qt \
+        --volume ${CCACHE_VOLUME}:/ccache \
 	--mount type=bind,source="$HOME"/docker_dev_home,target=/home/developer \
 	${QTCREATOR_IMAGE_NAME} bash
 #/opt/qt-creator/bin/qtcreator.sh
