@@ -31,3 +31,4 @@ cd ${ANDROID_SDK_ROOT}
 [[ -f ${ANDROID_SDK_ROOT}/bundletool-all-1.3.0.jar ]] || curl -sLO https://github.com/google/bundletool/releases/download/1.3.0/bundletool-all-1.3.0.jar
     
 chown -R $USER_ID:$GROUP_ID /opt/android-sdk/
+chown -R $USER_ID:$GROUP_ID /opt/cmdline-tools/
