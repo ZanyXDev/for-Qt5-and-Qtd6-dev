@@ -45,6 +45,9 @@ RUN set -eux; \
     && apt-get install -y mc \
     && apt-get install -y autoconf libtool \
     && apt-get install -y xmlstarlet \
+    && apt-get install -y gdb \
+    && apt-get install -y lldb \
+    && apt-get install -y clang-format \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/* 
 RUN set -eux; \    
     wget -O /tmp/qtcreator.deb ${QTCREATOR_URL} \
