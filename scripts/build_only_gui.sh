@@ -50,15 +50,11 @@ TOOLCHAIN_IMAGE_NAME="zanyxdev/qt5-toolchain:${QT_VERSION}"
 QTCREATOR_IMAGE_NAME="zanyxdev/qt5-qtcreator:v13.0.0" 
 QTCREATOR_URL="https://github.com/qt-creator/qt-creator/releases/download/v13.0.0/qtcreator-linux-x64-13.0.0.deb"
 
-BASE_DIR=$(pwd)
-
 echo -e "-----------------${green} Build image Qtcreator and toolchain ${reset}---------------------------" 
 echo [[ -d "$HOME"/docker_dev_home ]] || mkdir "$HOME"/docker_dev_home
-    echo -e "Image ${green} ${QTCREATOR_IMAGE_NAME} ${red}don't exists local, ${green}build.${reset}"   
-    cd ${BASE_DIR} && cd ../gui
+cd gui
 
-
-    docker  build \
+docker  build \
 	--build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
         --build-arg="LANG=ru-RU.UTF-8" \
         --build-arg="TZ=Europe/Moscow" \
@@ -67,5 +63,4 @@ echo [[ -d "$HOME"/docker_dev_home ]] || mkdir "$HOME"/docker_dev_home
         --build-arg="GROUP_ID=$(id -g ${USER})"       \
         --platform=linux/amd64 \
         --tag=${QTCREATOR_IMAGE_NAME} .
-     cd ${BASE_DIR}     
 
