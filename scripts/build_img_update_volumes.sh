@@ -56,8 +56,12 @@ docker pull bitnami/git:latest
 docker pull ubuntu:22.04
 docker pull eclipse-temurin:17 
 
-echo -e "-----------------${blue}remove un taged image${reset}---------------------------"
-docker rmi $(docker images -f "dangling=true" -q)
+if [[ $(docker images -f "dangling=true" -q) ]]; then
+   echo -e "-----------------${blue}remove untaged image${reset}---------------------------";
+   docker rmi $(docker images -f "dangling=true" -q)
+else
+    echo -e "-----------------${blue}no untaged image${reset}---------------------------"
+fi
 
 echo -e "-----------------${blue}check exist and dowloads files from github.com${reset}---------------------------"
 
