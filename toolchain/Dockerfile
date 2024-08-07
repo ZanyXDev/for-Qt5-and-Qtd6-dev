@@ -9,6 +9,8 @@ ENV QT_WEBKIT=${QT_WEBKIT:-"n"}
 ENV QT_WEBENGINE=${QT_WEBENGINE:-"n"}
 
 RUN set -eux; \
+    echo "go-faster apt"; \
+    echo  'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages;\
     export DEBIAN_FRONTEND=noninteractive ;\
     apt-get -y update  ;\
     apt-get -y upgrade ;\
@@ -20,7 +22,8 @@ RUN set -eux; \
     echo "Mesa-specific OpenGL extensions" >>/root/installed_deb.log;\
     apt-get -y install mesa-common-dev libgl1-mesa-dev ;\ 
     echo "Qt Multimedia You'll need at least alsa-lib [>= 1.0.15] and gstreamer [>=0.10.24] with the base-plugins package."  >>/root/installed_deb.log;\
-    apt-get -y install libasound2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev libgstreamer-plugins-bad1.0-dev ;\
+    apt-get -y install  libpulse-dev libasound2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev libgstreamer-plugins-bad1.0-dev ;\
+    apt-get -y install  gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav; \
     echo "QDoc Documentation Generator Tool Ubuntu/Debian " >>/root/installed_deb.log;\
     apt-get -y install clang libclang-dev ;\
     if ["$QT_WEBKIT" = "y"]; then \
@@ -30,14 +33,15 @@ RUN set -eux; \
     if [ "$QT_WEBENGINE" = "y" ]; then \
         echo "Qt WebEngine Ubuntu/Debian" >>/root/installed_deb.log;\	
         apt-get -y install libxcursor-dev libxcomposite-dev libxdamage-dev libxrandr-dev libxtst-dev libxss-dev libdbus-1-dev libevent-dev \
-	                   libfontconfig1-dev libcap-dev libpulse-dev libudev-dev libpci-dev libnss3-dev libasound2-dev libegl1-mesa-dev \
+	                   libcap-dev libpulse-dev libudev-dev libpci-dev libnss3-dev libasound2-dev libegl1-mesa-dev \
 			           gperf bison nodejs; \
     fi; \      
-    apt-get -y install apt-transport-https  ca-certificates gnupg nano libssl3 openssl ;\
+    echo "Fontconfig library"; \
+    apt-get install -y libfontconfig1-dev fontconfig;\
+    apt-get install -y apt-transport-https  ca-certificates gnupg nano libssl3 openssl ;\
     apt list --installed >>/root/installed_deb.log ;\
     apt clean -y ;\
     rm -rf /var/lib/apt/lists/*;
-    
 #-----------------------  Download files  ----------------------------------------    
 FROM ubuntu:22.04 AS download
 #ARG <name>[=<default value>]
@@ -45,10 +49,12 @@ FROM ubuntu:22.04 AS download
 #ENV CONT_IMG_VER=${CONT_IMG_VER:-v1.0.0}
 ARG CMAKE_URL
 ARG CMDTOOLS_URL
-ENV CMAKE_URL=${CMAKE_URL:-"https://cmake.org/files/v3.28/cmake-3.28.1-linux-x86_64.tar.gz"}
+ENV CMAKE_URL=${CMAKE_URL:-"https://github.com/Kitware/CMake/releases/download/v3.29.0/cmake-3.29.0-linux-x86_64.tar.gz"}
 ENV CMDTOOLS_URL=${CMDTOOLS_URL:-"https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip"}
 
 RUN set -eux; \
+    echo "go-faster apt"; \
+    echo  'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages;\
     export DEBIAN_FRONTEND=noninteractive ;\
     apt-get -y update  ;\
     apt-get -y upgrade ;\
@@ -56,7 +62,7 @@ RUN set -eux; \
     apt clean -y ;\
     rm -rf /var/lib/apt/lists/*;
     
-#-----------------------  CMAKE 3.28.1  ----------------------------------------
+#-----------------------  CMAKE 3.29.0-linux-x86_64-----------------------------
 RUN set -x                                                             \
     && wget -O /tmp/cmake.tar.gz ${CMAKE_URL}                          \
     && mkdir /opt/cmake                                                \
