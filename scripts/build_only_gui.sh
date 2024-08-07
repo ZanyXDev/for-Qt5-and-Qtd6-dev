@@ -47,8 +47,8 @@ QT5_OPT_VOLUME_NAME="${QT_VERSION}-opt-volume"
 CCACHE_VOLUME="${QT_VERSION}-ccache-volume"
 
 TOOLCHAIN_IMAGE_NAME="zanyxdev/qt5-toolchain:${QT_VERSION}" 
-QTCREATOR_IMAGE_NAME="zanyxdev/qt5-qtcreator:v13.0.0" 
-QTCREATOR_URL="https://github.com/qt-creator/qt-creator/releases/download/v13.0.0/qtcreator-linux-x64-13.0.0.deb"
+QTCREATOR_IMAGE_NAME="zanyxdev/qt5-qtcreator:v13.0.1" 
+QTCREATOR_URL="https://github.com/qt-creator/qt-creator/releases/download/v13.0.1/qtcreator-linux-x64-13.0.1.deb"
 
 echo -e "-----------------${green} Build image Qtcreator and toolchain ${reset}---------------------------" 
 echo [[ -d "$HOME"/docker_dev_home ]] || mkdir "$HOME"/docker_dev_home
