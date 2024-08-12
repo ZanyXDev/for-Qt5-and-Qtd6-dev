@@ -12,53 +12,76 @@ create_app_directory() {
   cd $Tgt  || return 1
 }
 
+download_dot_env_file() {
+  echo "Downloading .env file..."
+  "${Curl[@]}" "$RepoUrl"/qtcreator_app.env -o ./.env
+  [[ -e .env ]] && {   
+    set -a && source .env && set +a
+  } || return 1  
+}
+
+download_docker_compose_file() {
+  echo "Downloading docker-compose.yml..."
+  #"${Curl[@]}" "$RepoUrl"/docker-compose.yml -o ./docker-compose.yml
+}
+
 pull_docker_images() {
   echo "Pulling docker images"
   docker pull bitnami/git:latest
   docker pull ubuntu:22.04
   docker pull eclipse-temurin:17 
   
-  docker image inspect $BitamiGit >/dev/null 2>&1 && 
+  docker image inspect $BITNAMI_GIT >/dev/null 2>&1 && 
   {
-    echo "succes pulling '$BitamiGit'"    
+    echo "succes pulling '$BITNAMI_GIT'"  
+    CONTAINER_NAME_GIT=$(docker ps -aq --filter name=git)  
+    if [ -n "${CONTAINER_NAME_GIT}" ]; then
+        echo "CONTAINER_NAME_GIT is set"
+        docker rm $CONTAINER_NAME_GIT
+    fi    
   } || 
   {
-    echo "failed to pull '$BitamiGit'"
+    echo "failed to pull '$BITNAMI_GIT'"
     return 1
   }
   
-  docker image inspect $Ubuntu >/dev/null 2>&1 && 
+  docker image inspect $UBUNTU_LTS >/dev/null 2>&1 && 
   {
-    echo "succes pulling '$Ubuntu'"    
+    echo "succes pulling '$UBUNTU_LTS'"    
   } || 
   {
-    echo "failed to pull '$Ubuntu'"
+    echo "failed to pull '$UBUNTU_LTS'"
     return 1
   }
   
-  docker image inspect $Temurin  >/dev/null 2>&1 && 
+  docker image inspect $TEMURIN_JDK_17  >/dev/null 2>&1 && 
   {
-    echo "succes pulling '$Temurin'"    
+    echo "succes pulling '$TEMURIN_JDK_17'"    
   } || 
   {
-    echo "failed to pull '$Temurin'"
+    echo "failed to pull '$TEMURIN_JDK_17'"
     return 1
   }
+}
+download_scripts() {
+  echo "Downloading scripts file..."
+  
+  "${Curl[@]}" "$RepoUrl"/qt5_git_clone.sh -o ./qt5_git_clone.sh  
+  [[ -e qt5_git_clone.sh ]] && {   
+    echo "succes download 'qt5_git_clone.sh'"   
+    chmod +x qt5_git_clone.sh 
+  } || return 1  
+  
 }
 
 git_clone_source() {
     echo "Use git for clone sources..."
+    
+    docker run \
+       -v ./qt5_git_clone.sh:/root/qt5_git_clone.sh  \
+	   -v  ${SRC_VOLUME_NAME}:/usr/local/src \
+       -ti --rm --name git bitnami/git:latest /root/qt5_git_clone.sh ${QT_VERSION} "https://invent.kde.org/qt/qt/qt5.git" "/usr/local/src/qt5"       
 }
-
-download_dot_env_file() {
-  echo "Downloading .env file..."
-  "${Curl[@]}" "$RepoUrl"/qtcreator.env -o ./.env
-  [[ -e .env ]] && {   
-    set -a && source .env && set +a
-  } || return 1
-  
-}
-
 
 # MAIN
 main() {
@@ -75,15 +98,13 @@ main() {
  
   create_app_directory || {
     echo 'error creating QtCreator app directory'
-    return 12
+    return 11
   }
   
   download_dot_env_file || {
     echo 'error downloading .env'
-    return 9
+    return 12
   }
-  
-  exit 7
   
   download_docker_compose_file || {
     echo 'error downloading Docker Compose file'
@@ -92,14 +113,17 @@ main() {
   
   pull_docker_images || {
     echo 'error pulling Docker images'
-    return 11
+    return 14
   }
-    
   
+  download_scripts || {
+    echo 'error downloading scripts'
+    return 15
+  }
   
   git_clone_source || {
     echo 'error git clone sources'
-    return 15  
+    return 16  
   }
   return 0
 }
