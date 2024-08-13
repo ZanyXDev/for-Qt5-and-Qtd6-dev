@@ -47,7 +47,7 @@ pull_docker_images() {
   
   docker image inspect $UBUNTU_LTS >/dev/null 2>&1 && 
   {
-    echo "succes pulling '$UBUNTU_LTS'"    
+    echo "success pulling '$UBUNTU_LTS'"    
   } || 
   {
     echo "failed to pull '$UBUNTU_LTS'"
@@ -63,15 +63,22 @@ pull_docker_images() {
     return 1
   }
 }
-download_scripts() {
-  echo "Downloading scripts file..."
-  
-  "${Curl[@]}" "$RepoUrl"/qt5_git_clone.sh -o ./qt5_git_clone.sh  
-  [[ -e qt5_git_clone.sh ]] && {   
-    echo "succes download 'qt5_git_clone.sh'"   
-    chmod +x qt5_git_clone.sh 
-  } || return 1  
-  
+
+function download_scripts(){
+  echo "Downloading scripts file..."  
+  download_and_chmod "qt5_git_clone.sh"
+  download_and_chmod "openssl_git_clone.sh" 
+}
+
+download_and_chmod(){
+    local fname=$1
+    local ext=${fname##*.}
+
+    "${Curl[@]}" "$RepoUrl"/$fname  -o ./$fname
+    [[ -e $fname ]] && {   
+        echo "success downloading ${fname} with ext == ${ext}"   
+        [[ "$ext" = "sh" ]] && chmod +x $fname       
+    } || return 1  
 }
 
 git_clone_source() {
@@ -80,9 +87,40 @@ git_clone_source() {
     docker run \
        -v ./qt5_git_clone.sh:/root/qt5_git_clone.sh  \
 	   -v  ${SRC_VOLUME_NAME}:/usr/local/src \
-       -ti --rm --name git bitnami/git:latest /root/qt5_git_clone.sh ${QT_VERSION} "https://invent.kde.org/qt/qt/qt5.git" "/usr/local/src/qt5"       
+       -ti --rm --name git bitnami/git:latest /root/qt5_git_clone.sh ${QT_VERSION} "https://invent.kde.org/qt/qt/qt5.git" "/usr/local/src/qt5" >/dev/null 2>&1 && 
+    {
+        echo "success git clone '$QT_VERSION'"    
+    } || 
+    {
+        echo "failed from git clone '$QT_VERSION'"
+        return 1
+    }
+   
+   docker run \
+       -v ./openssl_git_clone.sh:/root/openssl_git_clone.sh  \
+	   -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
+       -ti --rm --name git bitnami/git:latest /root/openssl_git_clone.sh "https://github.com/KDAB/android_openssl.git" "/opt/android-sdk/android_openssl" >/dev/null 2>&1 && 
+    {
+        echo "success git clone android_openssl from KDAB"    
+    } || 
+    {
+        echo "failed from git clone android_openssl from KDAB"
+        return 1
+    }
 }
 
+docker_build_toolchain(){
+     echo "Build base toolchain..."
+     
+     docker build \
+	    --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
+	    --build-arg="LANG=ru-RU.UTF-8" \
+	    --build-arg="TZ=Europe/Moscow" \
+	    --platform=linux/amd64 \
+	    --tag=${TOOLCHAIN_IMAGE_NAME} \
+	    --progress plain \
+         https://github.com/ZanyXDev/for-Qt5-and-Qtd6-dev.git#main:toolchain      
+}
 # MAIN
 main() {
   echo "Starting QTCreator in docker installation..."
@@ -124,6 +162,11 @@ main() {
   git_clone_source || {
     echo 'error git clone sources'
     return 16  
+  }
+  
+  docker_build_toolchain || {
+    echo 'error build toolchain'
+    return 17
   }
   return 0
 }
