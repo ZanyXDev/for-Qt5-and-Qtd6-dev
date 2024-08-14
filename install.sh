@@ -68,6 +68,7 @@ function download_scripts(){
   echo "Downloading scripts file..."  
   download_and_chmod "qt5_git_clone.sh"
   download_and_chmod "openssl_git_clone.sh" 
+  download_and_chmod "get_androidsdk.sh" 
 }
 
 download_and_chmod(){
@@ -109,18 +110,37 @@ git_clone_source() {
     }
 }
 
-docker_build_toolchain(){
-     echo "Build base toolchain..."
-     
-     docker build \
-	    --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
-	    --build-arg="LANG=ru-RU.UTF-8" \
-	    --build-arg="TZ=Europe/Moscow" \
-	    --platform=linux/amd64 \
-	    --tag=${TOOLCHAIN_IMAGE_NAME} \
-	    --progress plain \
-         https://github.com/ZanyXDev/for-Qt5-and-Qtd6-dev.git#main:toolchain      
+docker_build_toolchain(){     
+     docker image inspect ${TOOLCHAIN_IMAGE_NAME} >/dev/null 2>&1 || {
+        echo "Build base toolchain..."    
+        local BUILD_LOG_NAME="${TOOLCHAIN_IMAGE_NAME//[:\/]/_}.log"        
+        docker build \
+	        --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
+	        --build-arg="LANG=ru-RU.UTF-8" \
+	        --build-arg="TZ=Europe/Moscow" \
+	        --platform=linux/amd64 \
+	        --tag=${TOOLCHAIN_IMAGE_NAME} \
+	        --progress=plain \
+            https://github.com/ZanyXDev/for-Qt5-and-Qtd6-dev.git#main:toolchain 2> ${BUILD_LOG_NAME}
+            return $?   
+         }
 }
+
+update_android_sdk(){
+    docker image inspect ${TOOLCHAIN_IMAGE_NAME} >/dev/null 2>&1 && {
+        echo "Update android_sdk with toolchain imahe..."    
+        local LOG_NAME="${TOOLCHAIN_IMAGE_NAME//[:\/]/_}._android_sdk.log"   
+        docker run \
+           --env "USER_ID=$(id -u ${USER})" \
+           --env "GROUP_ID=$(id -g ${USER})" \
+	       -v ${SDK_VOLUME_NAME}:/opt/android-sdk \
+	       -v ${SRC_VOLUME_NAME}:/usr/local/src \
+	       -v ./get_androidsdk.sh:/root/get_androidsdk.sh \
+	       -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/get_androidsdk.sh 2> ${LOG_NAME}
+           return $?
+         }
+}
+
 # MAIN
 main() {
   echo "Starting QTCreator in docker installation..."
@@ -167,6 +187,11 @@ main() {
   docker_build_toolchain || {
     echo 'error build toolchain'
     return 17
+  }
+  
+  update_android_sdk ||{
+    echo 'error update android sdk'
+    return 18
   }
   return 0
 }
