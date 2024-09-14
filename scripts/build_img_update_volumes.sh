@@ -48,16 +48,19 @@ CCACHE_VOLUME="${QT_VERSION}-ccache-volume"
 
 TOOLCHAIN_IMAGE_NAME="zanyxdev/qt5-toolchain:${QT_VERSION}" 
 QTCREATOR_IMAGE_NAME="zanyxdev/qt5-qtcreator:v13.0.0" 
-QTCREATOR_URL="https://github.com/qt-creator/qt-creator/releases/download/v13.0.0/qtcreator-linux-x64-13.0.0.deb"
-
+QTCREATOR_URL="https://github.com/qt-creator/qt-creator/releases/download/v13.0.1/qtcreator-linux-x64-13.0.1.deb"
 BASE_DIR=$(pwd)
 
 docker pull bitnami/git:latest
 docker pull ubuntu:22.04
 docker pull eclipse-temurin:17 
 
-echo -e "-----------------${blue}remove un taged image${reset}---------------------------"
-docker rmi $(docker images -f "dangling=true" -q)
+if [[ $(docker images -f "dangling=true" -q) ]]; then
+   echo -e "-----------------${blue}remove untaged image${reset}---------------------------";
+   docker rmi $(docker images -f "dangling=true" -q)
+else
+    echo -e "-----------------${blue}no untaged image${reset}---------------------------"
+fi
 
 echo -e "-----------------${blue}check exist and dowloads files from github.com${reset}---------------------------"
 
