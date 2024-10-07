@@ -16,24 +16,24 @@ RUN set -eux; \
     export DEBIAN_FRONTEND=noninteractive ;\
     apt-get -y update  ;\
     apt-get -y upgrade ;\
-    echo "Build essentials for ubuntu/debian" >>/root/installed_deb.log;\
+    echo "Build essentials for ubuntu/debian" ;\
     apt-get -y install build-essential perl python3 ;\
-    echo "Libxcb packets" >>/root/installed_deb.log;\
+    echo "Libxcb packets" ;\
     apt-get -y install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev \
                         libxcb-xinerama0-dev libxcb-xinput-dev libxcb-xkb-dev libxkbfile-dev ;\
-    echo "Mesa-specific OpenGL extensions" >>/root/installed_deb.log;\
+    echo "Mesa-specific OpenGL extensions" ;\
     apt-get -y install mesa-common-dev libgl1-mesa-dev ;\ 
-    echo "Qt Multimedia You'll need at least alsa-lib [>= 1.0.15] and gstreamer [>=0.10.24] with the base-plugins package."  >>/root/installed_deb.log;\
+    echo "Qt Multimedia You'll need at least alsa-lib [>= 1.0.15] and gstreamer [>=0.10.24] with the base-plugins package."  ;\
     apt-get -y install  libpulse-dev libasound2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev libgstreamer-plugins-bad1.0-dev ;\
     apt-get -y install  gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav; \
-    echo "QDoc Documentation Generator Tool Ubuntu/Debian " >>/root/installed_deb.log;\
+    echo "QDoc Documentation Generator Tool Ubuntu/Debian " ;\
     apt-get -y install clang libclang-dev ;\
     if ["$QT_WEBKIT" = "y"]; then \
       echo "Qt WebKit Ubuntu/Debian" >>/root/installed_deb.log;\	
       apt-get -y install flex bison gperf libicu-dev libxslt-dev ruby; \
     fi; \
     if [ "$QT_WEBENGINE" = "y" ]; then \
-        echo "Qt WebEngine Ubuntu/Debian" >>/root/installed_deb.log;\	
+        echo "Qt WebEngine Ubuntu/Debian" ;\	
         apt-get -y install libxcursor-dev libxcomposite-dev libxdamage-dev libxrandr-dev libxtst-dev libxss-dev libdbus-1-dev libevent-dev \
 	                   libcap-dev libpulse-dev libudev-dev libpci-dev libnss3-dev libasound2-dev libegl1-mesa-dev \
 			           gperf bison nodejs; \
@@ -41,8 +41,7 @@ RUN set -eux; \
     echo "Fontconfig library"; \
     apt-get install -y libfontconfig1-dev fontconfig;\
     apt-get install -y apt-transport-https  ca-certificates gnupg nano libssl3 openssl ;\
-    apt list --installed >>/root/installed_deb.log ;\
-    apt clean -y ;\
+    apt-get clean -y ;\
     rm -rf /var/lib/apt/lists/*;
 #-----------------------  Download files  ----------------------------------------    
 FROM ubuntu:22.04 AS download
@@ -63,7 +62,7 @@ RUN set -eux; \
     apt-get -y update  ;\
     apt-get -y upgrade ;\
     apt-get -y install wget curl unzip; \   
-    apt clean -y ;\
+    apt-get clean -y ;\
     rm -rf /var/lib/apt/lists/*;
     
 #-----------------------  CMAKE 3.29.0-linux-x86_64-----------------------------

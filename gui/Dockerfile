@@ -8,6 +8,7 @@ ARG QTCREATOR_URL
 ARG USER_ID
 ARG GROUP_ID
 ARG QTCREATOR_URL
+ARG TZ
 
 # Set environment variables, see Readme.md
 ENV DEBIAN_FRONTEND="noninteractive" 
@@ -27,13 +28,18 @@ ENV OPENSSL_ROOT_DIR="/opt/android_openssl/ssl_1.1"
 ENV DISPLAY :0
 ENV PERSIST=1
 ENV QT_QPA_FONTDIR="/usr/share/fonts/truetype"
-
 # Allow colored output on command line.
-ENV TERM=xterm-color
-
+ENV TERM=xterm-color  
 # +Timezone (если надо на этапе сборки)
 ENV TZ Europe/Moscow
-  
+# Add libusb dans library path
+ENV LD_LIBRARY_PATH=/usr/local/lib
+ENV JAVA_HOME=/opt/java/openjdk
+ENV xdg_runtime_dir=/run/user/"${USER_ID}"
+#Troubleshooting
+#Enabling the logging categories under qt.qpa is a good idea in general. This will show some debug prints both from eglfs and the input handlers.
+#ENV QT_LOGGING_RULES=qt.qpa.*=true
+
 #Install X11 mini apps and  QtCreator libs
 RUN set -eux; \
     echo "go-faster apt"; \
@@ -45,16 +51,23 @@ RUN set -eux; \
     && apt-get upgrade -y \
     && apt-get install -y locales sudo wget git libncurses5 libdouble-conversion3 libc6 libc-bin \
     pulseaudio mc autoconf libtool xmlstarlet gdb lldb clang-format \
-    && apt-get clean -y && rm -rf /var/lib/apt/lists/* 
-RUN set -eux; \    
-    wget -O /tmp/qtcreator.deb ${QTCREATOR_URL} \
+    && apt-get clean -y && rm -rf /var/lib/apt/lists/* \    
+    && wget -O /tmp/qtcreator.deb ${QTCREATOR_URL} \
     && dpkg -i /tmp/qtcreator.deb \
-	&& rm /tmp/qtcreator.deb 
+	&& rm /tmp/qtcreator.deb \
+    && chown -R $USER_ID:$GROUP_ID /opt/qt-creator; \
+    && chown -R $USER_ID:$GROUP_ID /opt/cmake
 	
 RUN set -eux; \  	
-    echo "/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/lib" >> /etc/ld.so.conf.d/x86_64-linux-gnu.conf \
-    && /sbin/ldconfig 
-
+    echo "/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/lib" >> /etc/ld.so.conf.d/x86_64-linux-gnu.conf ;\
+    /sbin/ldconfig ;\
+    echo "Generate locale" ;\
+    sed -i -e 's/# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' /etc/locale.gen ;\
+    locale-gen ;\
+    echo "Setup timezone" ;\
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime ;\
+    echo $TZ > /etc/timezone
+    
 RUN set -eux; \    
     if [ ${USER_ID:-0} -ne 0 ] && [ ${GROUP_ID:-0} -ne 0 ]; then \    
       groupadd -g ${GROUP_ID} developer; \
@@ -67,17 +80,7 @@ RUN set -eux; \
       mkdir -p /home/developer; \
       chown ${USER_ID}:${GROUP_ID} -R /home/developer; \
     fi
-RUN set -eux; \    
-    sed -i -e 's/# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' /etc/locale.gen \
-    && locale-gen
-
-RUN set -eux; \    
-    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
     
-RUN set -eux; \ 
-    chown -R $USER_ID:$GROUP_ID /opt/qt-creator; \
-    chown -R $USER_ID:$GROUP_ID /opt/cmake
-
 # Install latest libusb
 RUN set -eux; \ 
     cd /usr/local/src;\
@@ -87,18 +90,8 @@ RUN set -eux; \
     ./configure; \
     make; \
     make install
-
-# Add libusb dans library path
-ENV LD_LIBRARY_PATH=/usr/local/lib
-
+    
 USER developer
-
 WORKDIR /home/developer
-
-ENV JAVA_HOME=/opt/java/openjdk
-ENV xdg_runtime_dir=/run/user/"${USER_ID}"
-#Troubleshooting
-#Enabling the logging categories under qt.qpa is a good idea in general. This will show some debug prints both from eglfs and the input handlers.
-#ENV QT_LOGGING_RULES=qt.qpa.*=true
 
 ENTRYPOINT [ "/bin/bash", "-l", "-c" ]
