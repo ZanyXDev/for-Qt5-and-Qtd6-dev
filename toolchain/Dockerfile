@@ -10,7 +10,9 @@ ENV QT_WEBENGINE=${QT_WEBENGINE:-"n"}
 
 RUN set -eux; \
     echo "go-faster apt"; \
-    echo  'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages;\
+    echo 'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages;\
+    echo 'APT::Get::Install-Recommends "false";'> /etc/apt/apt.conf.d/99nosuggest;\
+    echo 'APT::Get::Install-Suggests "false";' >> /etc/apt/apt.conf.d/99nosuggest;\
     export DEBIAN_FRONTEND=noninteractive ;\
     apt-get -y update  ;\
     apt-get -y upgrade ;\
@@ -54,7 +56,9 @@ ENV CMDTOOLS_URL=${CMDTOOLS_URL:-"https://dl.google.com/android/repository/comma
 
 RUN set -eux; \
     echo "go-faster apt"; \
-    echo  'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages;\
+    echo 'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages;\
+    echo 'APT::Get::Install-Recommends "false";'> /etc/apt/apt.conf.d/99nosuggest;\
+    echo 'APT::Get::Install-Suggests "false";' >> /etc/apt/apt.conf.d/99nosuggest;\
     export DEBIAN_FRONTEND=noninteractive ;\
     apt-get -y update  ;\
     apt-get -y upgrade ;\

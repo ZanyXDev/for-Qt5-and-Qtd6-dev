@@ -37,17 +37,14 @@ ENV TZ Europe/Moscow
 #Install X11 mini apps and  QtCreator libs
 RUN set -eux; \
     echo "go-faster apt"; \
-    echo  'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages;\
+    echo 'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages;\
+    echo 'APT::Get::Install-Recommends "false";'> /etc/apt/apt.conf.d/99nosuggest;\
+    echo 'APT::Get::Install-Suggests "false";' >> /etc/apt/apt.conf.d/99nosuggest;\
+    export DEBIAN_FRONTEND=noninteractive ;\
     apt-get -y update \
     && apt-get upgrade -y \
     && apt-get install -y locales sudo wget git libncurses5 libdouble-conversion3 libc6 libc-bin \
-    && apt-get install -y pulseaudio \
-    && apt-get install -y mc \
-    && apt-get install -y autoconf libtool \
-    && apt-get install -y xmlstarlet \
-    && apt-get install -y gdb \
-    && apt-get install -y lldb \
-    && apt-get install -y clang-format \
+    pulseaudio mc autoconf libtool xmlstarlet gdb lldb clang-format \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/* 
 RUN set -eux; \    
     wget -O /tmp/qtcreator.deb ${QTCREATOR_URL} \
