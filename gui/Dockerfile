@@ -13,25 +13,25 @@ ARG TZ
 # Set environment variables, see Readme.md
 ENV DEBIAN_FRONTEND="noninteractive" 
 ENV PS1="\u@${BUILD_TAG}:\w\$ "
-ENV LANG ru_RU.UTF-8
-ENV LANGUAGE ru_RU:ru
-ENV LC_LANG ru_RU.UTF-8
-ENV LC_ALL ru_RU.UTF-8
+ENV LANG=ru_RU.UTF-8
+ENV LANGUAGE=ru_RU:ru
+ENV LC_LANG=ru_RU.UTF-8
+ENV LC_ALL=ru_RU.UTF-8
 ENV QTCREATOR_URL=${QTCREATOR_URL:-"https://github.com/qt-creator/qt-creator/releases/download/v12.0.2/qtcreator-linux-x64-12.0.2.deb"}
-ENV HOME /home/developer
+ENV HOME=/home/developer
 ENV PATH="${PATH}:/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/bin:/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/libexec:/opt/qtcreator/Tools/QtCreator/bin"
 ENV QT_HOST_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/"
 ENV QT_PLUGIN_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/plugins"
 ENV QML_IMPORT_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/qml"
 ENV QML2_IMPORT_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/qml"
 ENV OPENSSL_ROOT_DIR="/opt/android_openssl/ssl_1.1"
-ENV DISPLAY :0
+ENV DISPLAY=:0
 ENV PERSIST=1
 ENV QT_QPA_FONTDIR="/usr/share/fonts/truetype"
 # Allow colored output on command line.
 ENV TERM=xterm-color  
 # +Timezone (если надо на этапе сборки)
-ENV TZ Europe/Moscow
+ENV TZ=Europe/Moscow
 # Add libusb dans library path
 ENV LD_LIBRARY_PATH=/usr/local/lib
 ENV JAVA_HOME=/opt/java/openjdk
