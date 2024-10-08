@@ -50,7 +50,7 @@ RUN set -eux; \
     apt-get -y update ;\
     apt-get upgrade -y ;\
     apt-get install -y locales sudo wget git libncurses5 libdouble-conversion3 libc6 libc-bin \
-    libicu66 pulseaudio mc autoconf libtool xmlstarlet gdb lldb clang-format ;\
+    libicu70 pulseaudio mc autoconf libtool xmlstarlet gdb lldb clang-format ;\
     apt-get clean -y && rm -rf /var/lib/apt/lists/* ;\    
     wget -O /tmp/qtcreator.deb ${QTCREATOR_URL} ;\
     dpkg -i /tmp/qtcreator.deb ;\
