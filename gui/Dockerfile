@@ -50,15 +50,26 @@ RUN set -eux; \
     apt-get -y update ;\
     apt-get upgrade -y ;\
     apt-get install -y locales sudo wget git libncurses5 libdouble-conversion3 libc6 libc-bin \
-    pulseaudio mc autoconf libtool xmlstarlet gdb lldb clang-format ;\
+    libicu66 pulseaudio mc autoconf libtool xmlstarlet gdb lldb clang-format ;\
     apt-get clean -y && rm -rf /var/lib/apt/lists/* ;\    
     wget -O /tmp/qtcreator.deb ${QTCREATOR_URL} ;\
     dpkg -i /tmp/qtcreator.deb ;\
 	rm /tmp/qtcreator.deb ;\
     chown -R $USER_ID:$GROUP_ID /opt/qt-creator; \
     chown -R $USER_ID:$GROUP_ID /opt/cmake
-	
+
+# Install latest libusb
+RUN set -eux; \ 
+    cd /usr/local/src;\
+    git clone -b v1.0.27 https://github.com/libusb/libusb; \
+    cd libusb; \
+    ./bootstrap.sh; \
+    ./configure; \
+    make; \
+    make install
+    	
 RUN set -eux; \  	
+    echo "/usr/local/lib" >> /etc/ld.so.conf.d/x86_64-linux-gnu.conf ;\
     echo "/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/lib" >> /etc/ld.so.conf.d/x86_64-linux-gnu.conf ;\
     /sbin/ldconfig ;\
     echo "Generate locale" ;\
@@ -79,17 +90,7 @@ RUN set -eux; \
       echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers; \      
       mkdir -p /home/developer; \
       chown ${USER_ID}:${GROUP_ID} -R /home/developer; \
-    fi
-    
-# Install latest libusb
-RUN set -eux; \ 
-    cd /usr/local/src;\
-    git clone -b v1.0.27 https://github.com/libusb/libusb; \
-    cd libusb; \
-    ./bootstrap.sh; \
-    ./configure; \
-    make; \
-    make install
+    fi   
     
 USER developer
 WORKDIR /home/developer
