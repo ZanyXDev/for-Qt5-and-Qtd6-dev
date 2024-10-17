@@ -98,12 +98,12 @@ RUN set -eux; \
 COPY --from=eclipse-temurin:17 $JAVA_HOME $JAVA_HOME                                   
 COPY ./cmake /opt/cmake
 COPY .qtcreator.deb /tmp/qtcreator.deb 
-#Install X11 mini apps and  QtCreator libs
-RUN set -eux; 
-    dpkg -i /tmp/qtcreator.deb ;
-	rm /tmp/qtcreator.deb ;
-    chown -R $USER_ID:$GROUP_ID /opt/qt-creator; 
-    chown -R $USER_ID:$GROUP_ID /opt/cmake
+
+RUN set -eux; \
+    dpkg -i /tmp/qtcreator.deb ;\
+	rm /tmp/qtcreator.deb ;\
+    chown -R $USER_ID:$GROUP_ID /opt/qt-creator; \
+    chown -R $USER_ID:$GROUP_ID /opt/cmake\
 
 # Install latest libusb
 RUN set -eux; \ 
