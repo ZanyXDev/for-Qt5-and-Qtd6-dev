@@ -1,7 +1,4 @@
-#!/bin/bash
-set -e
 #!/bin/sh
-
 # Function to parse gpg list keys output & only export
 # public keys that are not expired (by gathered fingerprints)
 # creates file ./publickeys.asc
