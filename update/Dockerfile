@@ -7,8 +7,6 @@ ARG ANDROID_NDK_VER
 ARG BUILD_TAG
 ARG CMAKE_URL
 ARG GROUP_ID
-ARG QTCREATOR_URL
-ARG QT_VERSION
 ARG QT_WEBENGINE
 ARG QT_WEBKIT
 ARG TARGETARCH
@@ -49,8 +47,7 @@ ENV TERM=xterm-color
 # +Timezone (если надо на этапе сборки)
 ENV TZ=Europe/Moscow
 ENV xdg_runtime_dir=/run/user/"${USER_ID}"
-ENV QTCREATOR_URL
-ENV CMAKE_URL
+
 
 #Troubleshooting enabling the logging categories under qt.qpa is a good idea
 #in general. This will show some debug prints both from eglfs and the input handlers.
