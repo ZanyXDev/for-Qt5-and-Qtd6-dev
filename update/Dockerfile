@@ -53,58 +53,58 @@ ENV xdg_runtime_dir=/run/user/"${USER_ID}"
 #in general. This will show some debug prints both from eglfs and the input handlers.
 #ENV QT_LOGGING_RULES=qt.qpa.*=true
 
-RUN set -eux; \
-    echo "go-faster apt"; \
-    echo 'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages;\
-    echo 'APT::Get::Install-Recommends "false";'> /etc/apt/apt.conf.d/99nosuggest;\
-    echo 'APT::Get::Install-Suggests "false";' >> /etc/apt/apt.conf.d/99nosuggest;\
-    export DEBIAN_FRONTEND=noninteractive ;\
-    apt-get -y update  ;\
-    apt-get -y upgrade ;\
-    echo "Build essentials for ubuntu/debian" ;\
-    apt-get -y install build-essential perl python3 ;\
-    echo "Libxcb packets" ;\
+RUN set -eux; 
+    echo "go-faster apt"; 
+    echo 'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages;
+    echo 'APT::Get::Install-Recommends "false";'> /etc/apt/apt.conf.d/99nosuggest;
+    echo 'APT::Get::Install-Suggests "false";' >> /etc/apt/apt.conf.d/99nosuggest;
+    export DEBIAN_FRONTEND=noninteractive ;
+    apt-get -y update  ;
+    apt-get -y upgrade ;
+    echo "Build essentials for ubuntu/debian" ;
+    apt-get -y install build-essential perl python3 ;
+    echo "Libxcb packets" ;
     apt-get -y install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev \
-                        libxcb-xinerama0-dev libxcb-xinput-dev libxcb-xkb-dev libxkbfile-dev ;\
-    echo "Mesa-specific OpenGL extensions" ;\
-    apt-get -y install mesa-common-dev libgl1-mesa-dev ;\ 
-    echo "Qt Multimedia You'll need at least alsa-lib [>= 1.0.15] and gstreamer [>=0.10.24] with the base-plugins package."  ;\
-    apt-get -y install  libpulse-dev libasound2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev libgstreamer-plugins-bad1.0-dev ;\
-    apt-get -y install  gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav; \
-    echo "QDoc Documentation Generator Tool Ubuntu/Debian " ;\
-    apt-get -y install clang libclang-dev ;\
-    if ["$QT_WEBKIT" = "y"]; then \
-      echo "Qt WebKit Ubuntu/Debian" >>/root/installed_deb.log;\	
-      apt-get -y install flex bison gperf libicu-dev libxslt-dev ruby; \
-    fi; \
-    if [ "$QT_WEBENGINE" = "y" ]; then \
-        echo "Qt WebEngine Ubuntu/Debian" ;\	
+                        libxcb-xinerama0-dev libxcb-xinput-dev libxcb-xkb-dev libxkbfile-dev ;
+    echo "Mesa-specific OpenGL extensions" ;
+    apt-get -y install mesa-common-dev libgl1-mesa-dev ;
+    echo "Qt Multimedia You'll need at least alsa-lib [>= 1.0.15] and gstreamer [>=0.10.24] with the base-plugins package.";
+    apt-get -y install  libpulse-dev libasound2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev libgstreamer-plugins-bad1.0-dev ;
+    apt-get -y install  gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav; 
+    echo "QDoc Documentation Generator Tool Ubuntu/Debian ";
+    apt-get -y install clang libclang-dev ;
+    if ["$QT_WEBKIT" = "y"]; 
+    then \
+      echo "Qt WebKit Ubuntu/Debian" >>/root/installed_deb.log;	
+      apt-get -y install flex bison gperf libicu-dev libxslt-dev ruby;
+    fi; 
+    if [ "$QT_WEBENGINE" = "y" ]; 
+    then \
+        echo "Qt WebEngine Ubuntu/Debian" ;
         apt-get -y install libxcursor-dev libxcomposite-dev libxdamage-dev libxrandr-dev libxtst-dev libxss-dev libdbus-1-dev libevent-dev \
 	                   libcap-dev libpulse-dev libudev-dev libpci-dev libnss3-dev libasound2-dev libegl1-mesa-dev \
-			           gperf bison nodejs; \
-    fi; \      
-    echo "Fontconfig library"; \
-    apt-get install -y libfontconfig1-dev fontconfig;\
-    apt-get install -y apt-transport-https  ca-certificates gnupg nano libssl3 openssl ;\
-    echo "Wget, curl unzip"; \
-    apt-get -y install wget curl unzip; \ 
-    echo "Install X11 mini apps and  QtCreator libs"
+			           gperf bison nodejs; 
+    fi;       
+    echo "Fontconfig library"; 
+    apt-get install -y libfontconfig1-dev fontconfig;
+    apt-get install -y apt-transport-https  ca-certificates gnupg nano libssl3 openssl ;
+    echo "Wget, curl unzip"; 
+    apt-get -y install wget curl unzip; 
+    echo "Install X11 mini apps and  QtCreator libs";
     apt-get install -y \
         locales sudo git libncurses5 libdouble-conversion3 libc6 libc-bin \
         libicu70 pulseaudio mc autoconf libtool xmlstarlet gdb lldb clang-format ;
-    apt-get clean -y && rm -rf /var/lib/apt/lists/* ;\              
-    apt-get clean -y ;\
-    rm -rf /var/lib/apt/lists/*
+    apt-get clean -y && rm -rf /var/lib/apt/lists/*
     
 #-----------------------  Copy from other -----------------------------
 COPY --from=eclipse-temurin:17 $JAVA_HOME $JAVA_HOME                                   
 COPY ./cmake /opt/cmake
 COPY .qtcreator.deb /tmp/qtcreator.deb 
 #Install X11 mini apps and  QtCreator libs
-RUN set -eux; \ 
-    dpkg -i /tmp/qtcreator.deb ;\
-	rm /tmp/qtcreator.deb ;\
-    chown -R $USER_ID:$GROUP_ID /opt/qt-creator; \
+RUN set -eux; 
+    dpkg -i /tmp/qtcreator.deb ;
+	rm /tmp/qtcreator.deb ;
+    chown -R $USER_ID:$GROUP_ID /opt/qt-creator; 
     chown -R $USER_ID:$GROUP_ID /opt/cmake
 
 # Install latest libusb
@@ -125,16 +125,17 @@ RUN set -eux; \
     echo "Setup timezone" ;
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime ;
     echo $TZ > /etc/timezone    
-    if [ ${USER_ID:-0} -ne 0 ] && [ ${GROUP_ID:-0} -ne 0 ]; then \    
-      groupadd -g ${GROUP_ID} developer; \
-      useradd -u ${USER_ID} -g ${GROUP_ID} developer; \
-      install -d -m 0755 -o developer -g ${GROUP_ID} /home/developer; \
-      adduser developer sudo; \
-      echo "adding user developer to audio group"; \
-      adduser	developer audio; \
-      echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers; \      
-      mkdir -p /home/developer; \
-      chown ${USER_ID}:${GROUP_ID} -R /home/developer; \
+    if [ ${USER_ID:-0} -ne 0 ] && [ ${GROUP_ID:-0} -ne 0 ]; 
+      then \    
+      groupadd -g ${GROUP_ID} developer; 
+      useradd -u ${USER_ID} -g ${GROUP_ID} developer; 
+      install -d -m 0755 -o developer -g ${GROUP_ID} /home/developer; 
+      adduser developer sudo; 
+      echo "adding user developer to audio group"; 
+      adduser	developer audio; 
+      echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers; 
+      mkdir -p /home/developer; 
+      chown ${USER_ID}:${GROUP_ID} -R /home/developer; 
     fi   
     
 USER developer
