@@ -1,5 +1,7 @@
 # ------------------- Base images ----------------------------------------------
 FROM ubuntu:22.04 AS temp_stage
+#I would suggest to use a second RUN instruction on your build-stage
+RUN echo ${PWD} && ls -lR
 COPY /tmp/qtcreator.deb qtcreator.deb 
 RUN dpkg -i qtcreator.deb 
 
