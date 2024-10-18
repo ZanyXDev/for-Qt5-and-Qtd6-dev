@@ -40,6 +40,7 @@ ARG TARGETARCH
 ARG TZ
 ARG USER_ID
 ARG GROUP_ID
+ARG QT_VERSION
 
 # Declare build parameters.
 ENV ANDROID_NDK_ROOT=/opt/android-sdk/ndk/${ANDROID_NDK_VER}
