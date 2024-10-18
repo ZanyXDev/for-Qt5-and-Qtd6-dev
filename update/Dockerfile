@@ -1,6 +1,6 @@
 # ------------------- Base images ----------------------------------------------
 FROM ubuntu:22.04 AS temp_stage
-COPY qtcreator.deb qtcreator.deb 
+COPY /tmp/qtcreator.deb qtcreator.deb 
 RUN dpkg -i qtcreator.deb 
 
 FROM ubuntu:22.04 AS base_dev
