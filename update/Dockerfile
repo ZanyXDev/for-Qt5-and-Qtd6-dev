@@ -97,7 +97,7 @@ RUN set -eux; \
 #-----------------------  Copy from other -----------------------------
 COPY --from=eclipse-temurin:17 $JAVA_HOME $JAVA_HOME                                   
 COPY ./cmake /opt/cmake
-COPY .qtcreator.deb /tmp/qtcreator.deb 
+COPY qtcreator.deb /tmp/qtcreator.deb 
 
 RUN set -eux; \
     dpkg -i /tmp/qtcreator.deb ;\
