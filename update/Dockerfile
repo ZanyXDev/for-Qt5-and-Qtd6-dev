@@ -1,4 +1,8 @@
 # ------------------- Base images ----------------------------------------------
+FROM ubuntu:22.04 AS temp_stage
+COPY qtcreator.deb qtcreator.deb 
+RUN dpkg -i qtcreator.deb 
+
 FROM ubuntu:22.04 AS base_dev
 
 LABEL Description="This image based on Ubuntu 22.04,provides a base development \
@@ -48,7 +52,6 @@ ENV TERM=xterm-color
 ENV TZ=Europe/Moscow
 ENV xdg_runtime_dir=/run/user/"${USER_ID}"
 
-
 #Troubleshooting enabling the logging categories under qt.qpa is a good idea
 #in general. This will show some debug prints both from eglfs and the input handlers.
 #ENV QT_LOGGING_RULES=qt.qpa.*=true
@@ -94,17 +97,6 @@ RUN set -eux; \
         libicu70 pulseaudio mc autoconf libtool xmlstarlet gdb lldb clang-format ;\
     apt-get clean -y && rm -rf /var/lib/apt/lists/*
     
-#-----------------------  Copy from other -----------------------------
-COPY --from=eclipse-temurin:17 $JAVA_HOME $JAVA_HOME                                   
-COPY ./cmake /opt/cmake
-COPY qtcreator.deb /tmp/qtcreator.deb 
-
-RUN set -eux; \
-    dpkg -i /tmp/qtcreator.deb ;\
-	rm /tmp/qtcreator.deb ;\
-    chown -R $USER_ID:$GROUP_ID /opt/qt-creator; \
-    chown -R $USER_ID:$GROUP_ID /opt/cmake\
-
 # Install latest libusb
 RUN set -eux; \ 
     cd /usr/local/src;\
@@ -134,8 +126,15 @@ RUN set -eux; \
       mkdir -p /home/developer; \
       chown ${USER_ID}:${GROUP_ID} -R /home/developer; \
     fi   \
+
+#-----------------------  Copy from other -----------------------------
+# using --chown option
+COPY --chown=${USER_ID}:${GROUP_ID} --from=eclipse-temurin:17 $JAVA_HOME $JAVA_HOME   
+COPY --chown=${USER_ID}:${GROUP_ID} ./cmake /opt/cmake
+COPY --chown=${USER_ID}:${GROUP_ID} --from=temp_stage /opt/qt-creator /opt/qt-creator
     
 USER developer
+
 WORKDIR /home/developer
 
 ENTRYPOINT [ "/bin/bash", "-l", "-c" ]
