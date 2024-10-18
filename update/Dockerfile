@@ -1,23 +1,48 @@
 # ------------------- Base images ----------------------------------------------
 FROM ubuntu:22.04 AS temp_stage
-#I would suggest to use a second RUN instruction on your build-stage
-RUN echo ${PWD} && ls -lR
-COPY /tmp/qtcreator.deb qtcreator.deb 
-RUN dpkg -i qtcreator.deb 
+ARG CMAKE_URL
+ARG CMDTOOLS_URL
+ARG QTCREATOR_URL
 
+#ENV CMAKE_URL=$CMAKE_URL
+#ENV CMDTOOLS_URL=$CMDTOOLS_URL
+#ENV QTCREATOR_URL=$QTCREATOR_URL
+
+#I would suggest to use a second RUN instruction on your build-stage
+
+RUN set -eux; \
+    echo "go-faster apt"; \
+    echo 'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages;\
+    echo 'APT::Get::Install-Recommends "false";'> /etc/apt/apt.conf.d/99nosuggest;\
+    echo 'APT::Get::Install-Suggests "false";' >> /etc/apt/apt.conf.d/99nosuggest;\
+    export DEBIAN_FRONTEND=noninteractive ;\
+    apt-get -y update  ;\
+    apt-get -y upgrade ;\
+    apt-get -y install wget unzip; \   
+    apt-get clean -y ;\
+    rm -rf /var/lib/apt/lists/*
+    
+#-----------------------  Get and install QtCreator-----------------------------
+RUN wget -O /tmp/qtcreator.deb ${QTCREATOR_URL} && dpkg -i /tmp/qtcreator.deb  
+#-----------------------  CMAKE-----------------------------
+RUN wget -O /tmp/cmake.tar.gz ${CMAKE_URL} \
+    && mkdir /opt/cmake \
+    && tar -xzf /tmp/cmake.tar.gz  --strip-components=1 -C /opt/cmake 
+#-----------------------  commandlinetools-linux-9477386_lates -----------------
+RUN wget -O /tmp/commandlinetools.zip ${CMDTOOLS_URL} \
+    && unzip /tmp/commandlinetools.zip -d /opt   
+            
 FROM ubuntu:22.04 AS base_dev
 
 LABEL Description="This image based on Ubuntu 22.04,provides a base development \
                    environment (Linux and Android) for Qt developers"
 ARG ANDROID_NDK_VER
-ARG BUILD_TAG
-ARG CMAKE_URL
-ARG GROUP_ID
 ARG QT_WEBENGINE
 ARG QT_WEBKIT
 ARG TARGETARCH
 ARG TZ
 ARG USER_ID
+ARG GROUP_ID
 
 # Declare build parameters.
 ENV ANDROID_NDK_ROOT=/opt/android-sdk/ndk/${ANDROID_NDK_VER}
