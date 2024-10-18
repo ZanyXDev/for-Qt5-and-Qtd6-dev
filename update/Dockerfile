@@ -19,8 +19,8 @@ RUN set -eux; \
     apt-get -y update  ;\
     apt-get -y upgrade ;\
     apt-get -y install wget unzip; \   
-    apt-get clean -y ;\
-    rm -rf /var/lib/apt/lists/*
+    echo "install QtCreator Depends";\
+    apt-get -y install libdouble-conversion3 libxcb-cursor0
     
 #-----------------------  Get and install QtCreator-----------------------------
 RUN wget -O /tmp/qtcreator.deb ${QTCREATOR_URL} && dpkg -i /tmp/qtcreator.deb  
