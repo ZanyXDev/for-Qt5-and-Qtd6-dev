@@ -157,7 +157,7 @@ RUN set -eux; \
 #-----------------------  Copy from other -----------------------------
 # using --chown option
 COPY --chown=${USER_ID}:${GROUP_ID} --from=eclipse-temurin:17 $JAVA_HOME $JAVA_HOME   
-COPY --chown=${USER_ID}:${GROUP_ID} ./cmake /opt/cmake
+COPY --chown=${USER_ID}:${GROUP_ID} --from=temp_stage /opt/cmake /opt/cmake
 COPY --chown=${USER_ID}:${GROUP_ID} --from=temp_stage /opt/qt-creator /opt/qt-creator
     
 USER developer
