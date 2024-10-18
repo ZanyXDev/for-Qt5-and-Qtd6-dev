@@ -4,10 +4,7 @@ ARG CMAKE_URL
 ARG CMDTOOLS_URL
 ARG QTCREATOR_URL
 
-#ENV CMAKE_URL=$CMAKE_URL
-#ENV CMDTOOLS_URL=$CMDTOOLS_URL
-#ENV QTCREATOR_URL=$QTCREATOR_URL
-
+RUN echo 'cmd tools set to ${CMDTOOLS_URL}'
 #I would suggest to use a second RUN instruction on your build-stage
 
 RUN set -eux; \
@@ -152,8 +149,7 @@ RUN set -eux; \
       echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers; \
       mkdir -p /home/developer; \
       chown ${USER_ID}:${GROUP_ID} -R /home/developer; \
-    fi   \
-
+    fi
 #-----------------------  Copy from other -----------------------------
 # using --chown option
 COPY --chown=${USER_ID}:${GROUP_ID} --from=eclipse-temurin:17 $JAVA_HOME $JAVA_HOME   
