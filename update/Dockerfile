@@ -100,7 +100,7 @@ RUN set -eux; \
     apt-get -y install  gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav; \
     echo "QDoc Documentation Generator Tool Ubuntu/Debian ";\
     apt-get -y install clang libclang-dev ;\
-    if ["$QT_WEBKIT" = "y"]; then \
+    if [ "$QT_WEBKIT" = "y" ]; then \
       echo "Qt WebKit Ubuntu/Debian" >>/root/installed_deb.log;	\
       apt-get -y install flex bison gperf libicu-dev libxslt-dev ruby;\
     fi; \
@@ -138,7 +138,7 @@ RUN set -eux; \
     locale-gen ;\
     echo "Setup timezone" ;\
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime ;\
-    echo $TZ > /etc/timezone  \  
+    echo $TZ > /etc/timezone; \  
     if [ ${USER_ID:-0} -ne 0 ] && [ ${GROUP_ID:-0} -ne 0 ]; then \    
       groupadd -g ${GROUP_ID} developer; \
       useradd -u ${USER_ID} -g ${GROUP_ID} developer; \
@@ -149,7 +149,7 @@ RUN set -eux; \
       echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers; \
       mkdir -p /home/developer; \
       chown ${USER_ID}:${GROUP_ID} -R /home/developer; \
-    fi
+    fi ;
 #-----------------------  Copy from other -----------------------------
 # using --chown option
 COPY --chown=${USER_ID}:${GROUP_ID} --from=eclipse-temurin:17 $JAVA_HOME $JAVA_HOME   
