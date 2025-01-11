@@ -29,8 +29,8 @@ cd /tmp/build_qt
 
 /usr/local/src/qt5/configure  -ccache -opensource -confirm-license -xplatform android-clang -disable-rpath -android-ndk ${ANDROID_NDK_ROOT} -android-sdk ${ANDROID_HOME} \
 -no-warnings-are-errors -nomake tests -nomake examples \
--qt-freetype -qt-harfbuzz -qt-libjpeg -qt-libpng -qt-pcre -qt-zlib \
--skip 3d -skip qtdocgallery -skip activeqt -skip canvas3d -skip charts -skip connectivity -skip datavis3d -skip doc -skip gamepad -skip location -skip lottie -skip macextras  \
+-qt-freetype -fontconfig -qt-harfbuzz -qt-libjpeg -qt-libpng -qt-pcre -qt-zlib \
+-skip 3d -skip qtdocgallery -skip activeqt -skip canvas3d -skip connectivity -skip datavis3d -skip doc -skip gamepad -skip location -skip lottie -skip macextras  \
 -skip networkauth -skip qtwebengine -skip quick3d -skip quicktimeline -skip remoteobjects -skip script -skip scxml -skip sensors -skip serialbus -skip serialport -skip speech \
 -skip virtualkeyboard -skip wayland -skip webchannel -skip webengine -skip webglplugin -skip websockets -skip webview -skip x11extras -skip xmlpatterns -no-feature-d3d12 -ssl \
 -skip winextras \
@@ -42,7 +42,7 @@ OPENSSL_LIBS_RELEASE="-llibssl -llibcrypto" \
 make -j $(nproc) &> make.log
 make -j $(nproc) install 
  
-cp make.log ${QT_PATH}/make.log
+cp make.log ${QT_PATH}/make_android.log
 cp config.summary ${QT_PATH}/config.summary 
 chown -R $USER_ID:$GROUP_ID ${QT_PATH}
 
