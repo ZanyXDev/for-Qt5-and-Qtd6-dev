@@ -40,6 +40,7 @@ RUN set -eux; \
     fi; \      
     echo "Fontconfig library"; \
     apt-get install -y libfontconfig1-dev fontconfig;\
+    apt-get install -y cppcheck graphviz doxygen;\
     apt-get install -y apt-transport-https  ca-certificates gnupg nano libssl3 openssl ;\
     apt-get clean -y ;\
     rm -rf /var/lib/apt/lists/*;

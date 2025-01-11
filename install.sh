@@ -222,12 +222,7 @@ main() {
     echo 'error downloading .env'
     return 12
   }
-  
-   docker_build_qt_creator || {
-    echo 'error build QtCreator image'
-    return 21
-  }
-  exit 777
+    
   download_docker_compose_file || {
     echo 'error downloading Docker Compose file'
     return 13
