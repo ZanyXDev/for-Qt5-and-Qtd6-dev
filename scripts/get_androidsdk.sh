@@ -10,18 +10,15 @@ ANDROID_NDK_ROOT="/opt/android-sdk/ndk"
 
 cd /opt  
 yes | sdkmanager --sdk_root=/opt/android-sdk --licenses
+sdkmanager --sdk_root=/opt/android-sdk --list; 
 sdkmanager --sdk_root=/opt/android-sdk "platforms;android-30" "platform-tools" "build-tools;30.0.2"; 
 sdkmanager --sdk_root=/opt/android-sdk "platforms;android-31" "platform-tools" "build-tools;31.0.0"; 
-sdkmanager --sdk_root=/opt/android-sdk --list; 
 sdkmanager --sdk_root=/opt/android-sdk "ndk;21.3.6528147"; 
 sdkmanager --sdk_root=/opt/android-sdk "ndk;22.1.7171670"; 
 sdkmanager --sdk_root=/opt/android-sdk "ndk;25.1.8937393";
 sdkmanager --sdk_root=/opt/android-sdk 'cmdline-tools;latest'
-#[[ -d /opt/android-sdk/cmdline-tools ]] || mkdir /opt/android-sdk/cmdline-tools 
-#ln -fs /opt/cmdline-tools/ /opt/android-sdk/cmdline-tools/latest
 
 echo "Install ndk samples in ${ANDROID_NDK_ROOT}/samples"
-
 cd /tmp
 curl -sLO https://github.com/android/ndk-samples/archive/master.zip
 unzip -q master.zip 

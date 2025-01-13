@@ -52,7 +52,6 @@ FROM ubuntu:22.04 AS download
 ARG CMAKE_URL
 ARG CMDTOOLS_URL
 ENV CMAKE_URL=${CMAKE_URL:-"https://github.com/Kitware/CMake/releases/download/v3.29.0/cmake-3.29.0-linux-x86_64.tar.gz"}
-ENV CMDTOOLS_URL=${CMDTOOLS_URL:-"https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip"}
 
 RUN set -eux; \
     echo "go-faster apt"; \
@@ -70,29 +69,20 @@ RUN set -eux; \
 RUN set -x                                                             \
     && wget -O /tmp/cmake.tar.gz ${CMAKE_URL}                          \
     && mkdir /opt/cmake                                                \
-    && tar -xzf /tmp/cmake.tar.gz  --strip-components=1 -C /opt/cmake 
-#-----------------------  commandlinetools-linux-9477386_lates -----------------
-RUN set -x                                                             \
-    && wget -O /tmp/commandlinetools.zip ${CMDTOOLS_URL}               \
-    && unzip /tmp/commandlinetools.zip -d /opt   
-        
+    && tar -xzf /tmp/cmake.tar.gz  --strip-components=1 -C /opt/cmake         
 #--------------------------  Copy build binary  --------------------------------    
 FROM base_dev AS qt5-toolchain   
 ARG QT_VERSION
 ARG TARGETARCH
 ARG ANDROID_NDK_VER
-ENV ANDROID_NDK_VER=${ANDROID_NDK_VER:-"22.1.7171670"}
 
 ENV ANDROID_SDK_ROOT=/opt/android-sdk
-ENV ANDROID_NDK_ROOT=/opt/android-sdk/ndk/${ANDROID_NDK_VER}
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 ENV PATH="/opt/cmake/bin:${PATH}"
-ENV PATH="/opt/cmdline-tools/bin:${PATH}"
 
 COPY --from=download /opt/cmake /opt/cmake
 COPY --from=eclipse-temurin:17 $JAVA_HOME $JAVA_HOME                                   
-COPY --from=download /opt/cmdline-tools /opt/cmdline-tools 
 
 ENTRYPOINT [ "/bin/bash", "-l", "-c" ]    
     
