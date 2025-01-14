@@ -1,5 +1,5 @@
 # ------------------- Base images ----------------------------------------------
-FROM ubuntu:22.04
+FROM ubuntu:22.04 AS stage_1
 
 LABEL Description="This image based on Ubuntu 22.04,provides a base development \
                    environment (Linux and Android) for Qt developers"
@@ -57,5 +57,78 @@ RUN set -eux; \
 #--------------------------  Copy build binary  --------------------------------    
 COPY --from=eclipse-temurin:17 $JAVA_HOME $JAVA_HOME                                   
 
+FROM stage_1 AS stage_2
+# Declare build parameters.
+ARG QT_VERSION
+ARG TARGETARCH
+ARG BUILD_TAG
+ARG QTCREATOR_URL
+ARG USER_ID
+ARG GROUP_ID
+ARG QTCREATOR_URL
+ARG TZ
+# Set environment variables, see Readme.md
+ENV DEBIAN_FRONTEND="noninteractive" 
+ENV PS1="\u@${BUILD_TAG}:\w\$ "
+ENV LANG=ru_RU.UTF-8
+ENV LANGUAGE=ru_RU:ru
+ENV LC_LANG=ru_RU.UTF-8
+ENV LC_ALL=ru_RU.UTF-8
+ENV QTCREATOR_URL=${QTCREATOR_URL}
+ENV HOME=/home/developer
+ENV PATH="${PATH}:/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/bin:/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/libexec:/opt/qtcreator/bin"
+ENV QT_HOST_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/"
+ENV QT_PLUGIN_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/plugins"
+ENV QML_IMPORT_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/qml"
+ENV QML2_IMPORT_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/qml"
+ENV OPENSSL_ROOT_DIR="/opt/android_openssl/ssl_1.1"
+ENV DISPLAY=:0
+ENV PERSIST=1
+ENV QT_QPA_FONTDIR="/usr/share/fonts/truetype"
+# Allow colored output on command line.
+ENV TERM=xterm-color  
+# +Timezone (если надо на этапе сборки)
+ENV TZ=Europe/Moscow
+# Add libusb dans library path
+ENV LD_LIBRARY_PATH=/usr/local/lib
+ENV JAVA_HOME=/opt/java/openjdk
+ENV xdg_runtime_dir=/run/user/"${USER_ID}"
+#Troubleshooting
+#Enabling the logging categories under qt.qpa is a good idea in general. This will show some debug prints both from eglfs and the input handlers.
+#ENV QT_LOGGING_RULES=qt.qpa.*=true
+
+#install QtCreator
+RUN set -eux; \
+    dpkg -i /opt/download/qtcreator.deb ;\
+    chown -R $USER_ID:$GROUP_ID /opt/qt-creator; \
+    chown -R $USER_ID:$GROUP_ID /opt/cmake
+    
+RUN set -eux; \  	
+    echo "/usr/local/lib" >> /etc/ld.so.conf.d/x86_64-linux-gnu.conf ;\
+    echo "/opt/Qt/${QT_VERSION}-amd64-lts-lgpl/lib" >> /etc/ld.so.conf.d/x86_64-linux-gnu.conf ;\
+    echo "/opt/Qt/${QT_VERSION}-android-lts-lgpl/lib" >> /etc/ld.so.conf.d/x86_64-linux-gnu.conf ;\
+    /sbin/ldconfig ;\
+    echo "Generate locale" ;\
+    sed -i -e 's/# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' /etc/locale.gen ;\
+    locale-gen ;\
+    echo "Setup timezone" ;\
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime ;\
+    echo $TZ > /etc/timezone ;\
+    if [ ${USER_ID:-0} -ne 0 ] && [ ${GROUP_ID:-0} -ne 0 ]; then \    
+      groupadd -g ${GROUP_ID} developer; \
+      useradd -u ${USER_ID} -g ${GROUP_ID} developer; \
+      install -d -m 0755 -o developer -g ${GROUP_ID} /home/developer; \
+      adduser developer sudo; \
+      echo "adding user developer to audio group"; \
+      adduser	developer audio; \
+      echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers; \      
+      mkdir -p /home/developer; \
+      chown ${USER_ID}:${GROUP_ID} -R /home/developer; \
+    fi 
+    
+USER developer
+
+WORKDIR /home/developer
+    
 ENTRYPOINT [ "/bin/bash", "-l", "-c" ]    
     
