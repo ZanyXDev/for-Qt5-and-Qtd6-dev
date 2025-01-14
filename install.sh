@@ -62,7 +62,8 @@ docker run \
 ANDROID_SDK_ROOT="/opt/android-sdk"
 ANDROID_NDK_ROOT="/opt/android-sdk/ndk"
 CMAKE_URL=$1
-QTCREATOR_URL=$2                                 
+QTCREATOR_URL=$2    
+CMDTOOLS_URL=$3                             
 [[ -d /opt/cmake ]] || mkdir /opt/cmake  
 [[ -d /opt/download/ ]] || mkdir /opt/download/
 apt-get -y update && apt-get -y upgrade && apt-get -y install wget unzip;
@@ -73,20 +74,27 @@ apt-get -y update && apt-get -y upgrade && apt-get -y install wget unzip;
     wget -O /opt/download/master.zip https://github.com/android/ndk-samples/archive/master.zip
     echo "Download buildtool to generate aab packages in ${ANDROID_SDK_ROOT}"
     wget -O ${ANDROID_SDK_ROOT}/bundletool-all-1.3.0.jar https://github.com/google/bundletool/releases/download/1.3.0/bundletool-all-1.3.0.jar
+    echo "Download cmdline-tools"
+    wget -O /opt/download/commandlinetools.zip ${CMDTOOLS_URL} 
 )&  
 last_task_pid=$!   
-wait  $last_task_pid             
+wait  $last_task_pid   
+          
 tar -xzf /opt/download/cmake.tar.gz  --strip-components=1 -C /opt/cmake     
-dpkg --extract  /opt/download/qtcreator.deb /   
-echo "set owner to cmake and QTCreator folders and files"
-chown -R $USER_ID:$GROUP_ID /opt/qt-creator 
-chown -R $USER_ID:$GROUP_ID /opt/cmake 
+dpkg --extract  /opt/download/qtcreator.deb /  
+
+echo "Unzip cmdLineTools"
+unzip /opt/download/commandlinetools.zip -d /opt
+
 echo "Move ndk samples in ${ANDROID_NDK_ROOT}/samples"
 cd /opt/download/
 unzip -q master.zip 
 [[ -d ${ANDROID_NDK_ROOT}/samples ]] || mkdir -p ${ANDROID_NDK_ROOT}/samples
 mv ndk-samples-master ${ANDROID_NDK_ROOT}/samples    
-' docker_bash ${CMAKE_URL} ${QTCREATOR_URL}  
+
+chown -R $USER_ID:$GROUP_ID /opt
+
+' docker_bash ${CMAKE_URL} ${QTCREATOR_URL}  ${CMDTOOLS_URL} 
   return $?   
 }
 
@@ -248,25 +256,25 @@ main() {
     return 14
   }
  
-#  docker_prune_volumes|| {
-#    echo 'error remove volumes'
-#    return 15
-#  }  
+  docker_prune_volumes|| {
+    echo 'error remove volumes'
+    return 15
+  }  
   
-#  download_to_opt_volume || {
-#    echo 'error download to opt volume'
-#    return 16
-#  }  
+  download_to_opt_volume || {
+    echo 'error download to opt volume'
+    return 16
+  }  
   
-#  copy_java_to_opt_volume || {
-#    echo 'error copy java to opt volume'
-#    return 17
-#  } 
+  copy_java_to_opt_volume || {
+    echo 'error copy java to opt volume'
+    return 17
+  } 
   
-#   git_clone_source || {
-#    echo 'error git clone sources'
-#    return 18 
-#  }
+   git_clone_source || {
+    echo 'error git clone sources'
+    return 18 
+  }
   
   docker_build_builder || {
     echo 'error build toolchain'
