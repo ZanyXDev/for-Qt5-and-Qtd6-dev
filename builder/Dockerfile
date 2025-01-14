@@ -56,8 +56,6 @@ RUN set -eux; \
     apt-get -y install sudo nano mc ;\          
     apt-get clean -y && rm -rf /var/lib/apt/lists/*
     
-#--------------------------  Copy build binary  --------------------------------    
-COPY --from=eclipse-temurin:17 $JAVA_HOME $JAVA_HOME                                   
 
 FROM stage_1 AS stage_2
 # Declare build parameters.
@@ -78,7 +76,7 @@ ENV LC_LANG=ru_RU.UTF-8
 ENV LC_ALL=ru_RU.UTF-8
 ENV QTCREATOR_URL=${QTCREATOR_URL}
 ENV HOME=/home/developer
-ENV PATH="${PATH}:/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/bin:/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/libexec:/opt/qtcreator/bin"
+ENV PATH="${PATH}:/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/bin:/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/libexec:/opt/qtcreator/bin:${JAVA_HOME}"
 ENV QT_HOST_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/"
 ENV QT_PLUGIN_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/plugins"
 ENV QML_IMPORT_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/qml"
@@ -93,12 +91,14 @@ ENV TERM=xterm-color
 ENV TZ=Europe/Moscow
 # Add libusb dans library path
 ENV LD_LIBRARY_PATH=/usr/local/lib
-ENV JAVA_HOME=/opt/java/openjdk
 ENV xdg_runtime_dir=/run/user/"${USER_ID}"
 #Troubleshooting
 #Enabling the logging categories under qt.qpa is a good idea in general. This will show some debug prints both from eglfs and the input handlers.
 #ENV QT_LOGGING_RULES=qt.qpa.*=true
-    
+ENV JAVA_HOME=/opt/java/openjdk
+ENV JRE_CACERTS_PATH=/opt/java/openjdk/lib/security/cacerts
+ENV JAVA_VERSION=jdk-17.0.13+11
+
 RUN set -eux; \  	
     echo "/usr/local/lib" >> /etc/ld.so.conf.d/x86_64-linux-gnu.conf ;\
     echo "/opt/Qt/${QT_VERSION}-amd64-lts-lgpl/lib" >> /etc/ld.so.conf.d/x86_64-linux-gnu.conf ;\
