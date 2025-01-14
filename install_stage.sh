@@ -154,7 +154,7 @@ git_clone_source() {
     }
 }
  
-  build_qt5_amd64-target(){
+build_qt5_amd64-target(){
   docker image inspect ${BUILDER_IMAGE_NAME} >/dev/null 2>&1 && {
   echo "Build ${QT_VERSION} amd64-lts-lgplwith toolchain container..."    
   docker run \
@@ -226,31 +226,32 @@ main() {
     echo 'error remove volumes'
     return 15
   }  
-  dowload_to_opt_volume || {
-    echo 'error download to opt volume'
+  docker_build_builder || {
+    echo 'error build toolchain'
     return 16
   }  
-    git_clone_source || {
+
+  dowload_to_opt_volume || {
+    echo 'error download to opt volume'
+    return 17
+  }  
+  git_clone_source || {
     echo 'error git clone sources'
-    return 17 
+    return 18 
   }
   update_android_sdk || {
     echo 'error update android sdk'
-    return 18
+    return 19
   }
   
   build_qt5_amd64-target || {
     echo 'error build qt5 amd64 target'
-    return 19
+    return 20
   }
   build_qt5_android-target || {
     echo 'error build qt5 android target'
-    return 20
+    return 21
   }
-  docker_build_builder || {
-    echo 'error build toolchain'
-    return 77
-  }  
 
   return 0
 }
