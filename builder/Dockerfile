@@ -8,8 +8,6 @@ ARG QT_WEBENGINE
 ARG QT_VERSION
 ARG TARGETARCH
 
-ENV JAVA_HOME=/opt/java/openjdk
-ENV PATH="${JAVA_HOME}/bin:${PATH}"
 ENV QT_WEBKIT=${QT_WEBKIT:-"n"}
 ENV QT_WEBENGINE=${QT_WEBENGINE:-"n"}
 
@@ -74,9 +72,7 @@ ENV LANG=ru_RU.UTF-8
 ENV LANGUAGE=ru_RU:ru
 ENV LC_LANG=ru_RU.UTF-8
 ENV LC_ALL=ru_RU.UTF-8
-ENV QTCREATOR_URL=${QTCREATOR_URL}
 ENV HOME=/home/developer
-ENV PATH="${PATH}:/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/bin:/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/libexec:/opt/qtcreator/bin:${JAVA_HOME}"
 ENV QT_HOST_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/"
 ENV QT_PLUGIN_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/plugins"
 ENV QML_IMPORT_PATH="/opt/Qt/${QT_VERSION}-${TARGETARCH}-lts-lgpl/qml"
@@ -97,7 +93,8 @@ ENV xdg_runtime_dir=/run/user/"${USER_ID}"
 #ENV QT_LOGGING_RULES=qt.qpa.*=true
 ENV JAVA_HOME=/opt/java/openjdk
 ENV JRE_CACERTS_PATH=/opt/java/openjdk/lib/security/cacerts
-ENV JAVA_VERSION=jdk-17.0.13+11
+ENV JAVA_VERSION="jdk-17.0.13"
+ENV PATH="${PATH}:/opt/Qt/${QT_VERSION}-amd64-lts-lgpl/bin:/opt/Qt/${QT_VERSION}-android-lts-lgpl/libexec:/opt/qtcreator/bin:${JAVA_HOME}/bin"
 
 RUN set -eux; \  	
     echo "/usr/local/lib" >> /etc/ld.so.conf.d/x86_64-linux-gnu.conf ;\
@@ -127,4 +124,3 @@ USER developer
 WORKDIR /home/developer
     
 ENTRYPOINT [ "/bin/bash", "-l", "-c" ]    
-    
