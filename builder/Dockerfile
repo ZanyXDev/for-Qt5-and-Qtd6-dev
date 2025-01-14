@@ -51,7 +51,9 @@ RUN set -eux; \
         apt-get -y install libxcursor-dev libxcomposite-dev libxdamage-dev libxrandr-dev libxtst-dev libxss-dev libdbus-1-dev libevent-dev \
 	                   libcap-dev libpulse-dev libudev-dev libpci-dev libnss3-dev libasound2-dev libegl1-mesa-dev \
 			           gperf bison nodejs; \
-    fi; \         
+    fi; \   
+    echo "Auth Tool Ubuntu/Debian " ;\
+    apt-get -y install sudo nano mc ;\          
     apt-get clean -y && rm -rf /var/lib/apt/lists/*
     
 #--------------------------  Copy build binary  --------------------------------    
