@@ -96,11 +96,6 @@ ENV xdg_runtime_dir=/run/user/"${USER_ID}"
 #Troubleshooting
 #Enabling the logging categories under qt.qpa is a good idea in general. This will show some debug prints both from eglfs and the input handlers.
 #ENV QT_LOGGING_RULES=qt.qpa.*=true
-
-#install QtCreator
-RUN set -eux; \
-    chown -R $USER_ID:$GROUP_ID /opt/qt-creator; \
-    chown -R $USER_ID:$GROUP_ID /opt/cmake
     
 RUN set -eux; \  	
     echo "/usr/local/lib" >> /etc/ld.so.conf.d/x86_64-linux-gnu.conf ;\
