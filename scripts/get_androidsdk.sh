@@ -1,5 +1,7 @@
 #!/bin/bash
 export PATH=${PATH}:${JAVA_HOME}/bin
+export PATH=${PATH}:/opt/cmdline-tools/bin
+
 cd /opt  
 yes | sdkmanager --sdk_root=/opt/android-sdk --licenses
 sdkmanager --sdk_root=/opt/android-sdk "cmdline-tools;latest"
