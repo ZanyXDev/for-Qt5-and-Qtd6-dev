@@ -99,7 +99,6 @@ ENV xdg_runtime_dir=/run/user/"${USER_ID}"
 
 #install QtCreator
 RUN set -eux; \
-    dpkg -i /opt/download/qtcreator.deb ;\
     chown -R $USER_ID:$GROUP_ID /opt/qt-creator; \
     chown -R $USER_ID:$GROUP_ID /opt/cmake
     
