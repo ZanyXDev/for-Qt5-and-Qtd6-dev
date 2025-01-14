@@ -13,56 +13,19 @@ create_app_directory() {
 }
 
 download_dot_env_file() {
+[[ -f .env ]] || {
   echo "Downloading .env file..."
   "${Curl[@]}" "$RepoUrl"/qtcreator_app.env -o ./.env
-  [[ -e .env ]] && {   
-    HOST_TARGET=`lscpu | grep Architecture | awk {'print $2'}`  
-    set -a && source .env && set +a
-  } || return 1  
-}
-
-download_docker_compose_file() {
-  echo "Downloading docker-compose.yml..."
-  #"${Curl[@]}" "$RepoUrl"/docker-compose.yml -o ./docker-compose.yml
+}  
+  set -a && source .env && set +a    
+  return $?
 }
 
 pull_docker_images() {
   echo "Pulling docker images"
-  docker pull bitnami/git:latest
-  docker pull ubuntu:22.04
-  docker pull eclipse-temurin:17 
-  
-  docker image inspect $BITNAMI_GIT >/dev/null 2>&1 && 
-  {
-    echo "succes pulling '$BITNAMI_GIT'"  
-    CONTAINER_NAME_GIT=$(docker ps -aq --filter name=git)  
-    if [ -n "${CONTAINER_NAME_GIT}" ]; then
-        echo "CONTAINER_NAME_GIT is set"
-        docker rm $CONTAINER_NAME_GIT
-    fi    
-  } || 
-  {
-    echo "failed to pull '$BITNAMI_GIT'"
-    return 1
-  }
-  
-  docker image inspect $UBUNTU_LTS >/dev/null 2>&1 && 
-  {
-    echo "success pulling '$UBUNTU_LTS'"    
-  } || 
-  {
-    echo "failed to pull '$UBUNTU_LTS'"
-    return 1
-  }
-  
-  docker image inspect $TEMURIN_JDK_17  >/dev/null 2>&1 && 
-  {
-    echo "succes pulling '$TEMURIN_JDK_17'"    
-  } || 
-  {
-    echo "failed to pull '$TEMURIN_JDK_17'"
-    return 1
-  }
+  docker pull ${BITNAMI_GIT} 
+  docker pull ${UBUNTU_LTS}
+  docker pull ${TEMURIN_JDK_17}    
 }
 
 function download_scripts(){
@@ -83,6 +46,114 @@ download_and_chmod(){
         echo "success downloading ${fname} with ext == ${ext}"   
         [[ "$ext" = "sh" ]] && chmod +x $fname       
     } || return 1  
+}
+
+
+docker_build_builder(){     
+if [ -z "$(docker images -q ${BUILDER_IMAGE_NAME} 2> /dev/null)" ]; then
+  # do build
+   docker build \   
+	        --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
+	        --build-arg="LANG=ru-RU.UTF-8" \
+	        --build-arg="TZ=Europe/Moscow" \
+	        --platform=linux/amd64 \
+	        --target=stage_1 \
+	        --tag=${BUILDER_IMAGE_NAME} \
+	        --progress=plain \
+            https://github.com/ZanyXDev/for-Qt5-and-Qtd6-dev.git#main:builder            
+fi
+
+if [ -z "$(docker images -q ${QTCREATOR_IMAGE_NAME} 2> /dev/null)" ]; then
+  # do build
+   docker build \            
+	        --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
+	        --build-arg="LANG=ru-RU.UTF-8" \
+	        --build-arg="TZ=Europe/Moscow" \
+            --build-arg="USER_ID=$(id -u ${USER})"  \
+            --build-arg="GROUP_ID=$(id -g ${USER})" \
+	        --platform=linux/amd64 \
+	        --target=stage_2 \
+	        --tag=${QTCREATOR_IMAGE_NAME} \
+	        --progress=plain \
+            https://github.com/ZanyXDev/for-Qt5-and-Qtd6-dev.git#main:builder            
+fi
+    return $?  
+}
+
+docker_prune_volumes(){
+   docker volume rm ${SRC_VOLUME_NAME} || true
+   docker volume rm ${OPT_VOLUME_NAME} || true   
+   return $?
+}
+
+dowload_to_opt_volume(){
+echo "Download other source to opt volume..."  
+docker run \
+--env "USER_ID=$(id -u ${USER})" \
+--env "GROUP_ID=$(id -g ${USER})" \
+--env "CCACHE_DIR=/ccache" \
+--volume ${OPT_VOLUME_NAME}:/opt \
+--volume ${SRC_VOLUME_NAME}:/usr/local/src \
+-ti --rm ${UBUNTU_LTS} bash -c '#!/bin/bash
+ANDROID_SDK_ROOT="/opt/android-sdk"
+ANDROID_NDK_ROOT="/opt/android-sdk/ndk"
+CMAKE_URL=$1
+QTCREATOR_URL=$2                                 
+[[ -d /opt/cmake ]] || mkdir /opt/cmake  
+[[ -d /opt/download/ ]] || mkdir /opt/download/
+apt-get -y update && apt-get -y upgrade && apt-get -y install wget unzip;
+(  
+    wget -O /opt/download/cmake.tar.gz ${CMAKE_URL}
+    wget -O /opt/download/qtcreator.deb ${QTCREATOR_URL}
+    echo "Download ndk samples"
+    wget -O /opt/download/master.zip https://github.com/android/ndk-samples/archive/master.zip
+    echo "Download buildtool to generate aab packages in ${ANDROID_SDK_ROOT}"
+    wget -O ${ANDROID_SDK_ROOT}/bundletool-all-1.3.0.jar https://github.com/google/bundletool/releases/download/1.3.0/bundletool-all-1.3.0.jar
+)&  
+last_task_pid=$!   
+wait  $last_task_pid             
+tar -xzf /opt/download/cmake.tar.gz  --strip-components=1 -C /opt/cmake     
+dpkg --extract  /opt/download/qtcreator.deb /   
+echo "set owner to cmake and QTCreator folders and files"
+chown -R $USER_ID:$GROUP_ID /opt/qt-creator 
+chown -R $USER_ID:$GROUP_ID /opt/cmake 
+echo "Move ndk samples in ${ANDROID_NDK_ROOT}/samples"
+cd /opt/download/
+unzip -q master.zip 
+[[ -d ${ANDROID_NDK_ROOT}/samples ]] || mkdir -p ${ANDROID_NDK_ROOT}/samples
+mv ndk-samples-master ${ANDROID_NDK_ROOT}/samples    
+' docker_bash ${CMAKE_URL} ${QTCREATOR_URL}  
+  return $?   
+}
+
+copy_java_to_opt_volume(){
+echo "Copy java from container..."   
+docker run \
+--env "USER_ID=$(id -u ${USER})" \
+--env "GROUP_ID=$(id -g ${USER})" \
+--env "CCACHE_DIR=/ccache" \
+--volume ${OPT_VOLUME_NAME}:/opt/target \
+--volume ${SRC_VOLUME_NAME}:/usr/local/src \
+-ti --rm ${TEMURIN_JDK_17} bash -c '#!/bin/bash
+JAVA_HOME=/opt/java/openjdk
+#--------------------------  Copy build binary  --------------------------------    
+cp -r $JAVA_HOME /opt/target                                  
+'
+return $? 
+}
+
+update_android_sdk(){
+    docker image inspect ${BUILDER_IMAGE_NAME} >/dev/null 2>&1 && {
+        echo "Update android_sdk with toolchain container..."            
+        docker run \
+           --env "USER_ID=$(id -u ${USER})" \
+           --env "GROUP_ID=$(id -g ${USER})" \
+    	    --volume ${OPT_VOLUME_NAME}:/opt \
+	       --volume ${SRC_VOLUME_NAME}:/usr/local/src \
+	       --volume ./get_androidsdk.sh:/root/get_androidsdk.sh \
+	       -ti --rm ${BUILDER_IMAGE_NAME} /root/get_androidsdk.sh 
+           return $?
+         }
 }
 
 git_clone_source() {
@@ -112,100 +183,48 @@ git_clone_source() {
         return 1
     }
 }
-
-docker_build_toolchain(){     
-     docker image inspect ${TOOLCHAIN_IMAGE_NAME} >/dev/null 2>&1 || {
-        echo "Build base toolchain..."    
-        local LOG_NAME="${TOOLCHAIN_IMAGE_NAME//[:\/]/_}.log"        
-        docker build \
-	        --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
-	        --build-arg="LANG=ru-RU.UTF-8" \
-	        --build-arg="TZ=Europe/Moscow" \
-	        --platform=linux/amd64 \
-	        --tag=${TOOLCHAIN_IMAGE_NAME} \
-	        --progress=plain \
-            https://github.com/ZanyXDev/for-Qt5-and-Qtd6-dev.git#main:toolchain 2> ${LOG_NAME}
-            return $?   
-         }
-}
-
-update_android_sdk(){
-    docker image inspect ${TOOLCHAIN_IMAGE_NAME} >/dev/null 2>&1 && {
-        echo "Update android_sdk with toolchain container..."    
-        local LOG_NAME="${TOOLCHAIN_IMAGE_NAME//[:\/]/_}.${HOST_TARGET}_android_sdk.log"   
-        docker run \
-           --env "USER_ID=$(id -u ${USER})" \
-           --env "GROUP_ID=$(id -g ${USER})" \
-	       --volume ${SDK_VOLUME_NAME}:/opt/android-sdk \
-	       --volume ${SRC_VOLUME_NAME}:/usr/local/src \
-	       --volume ./get_androidsdk.sh:/root/get_androidsdk.sh \
-	       -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/get_androidsdk.sh 2>&1 ${LOG_NAME}
-           return $?
-         }
-}
-
- build_qt5_amd64-target(){
-  docker image inspect ${TOOLCHAIN_IMAGE_NAME} >/dev/null 2>&1 && {
+ 
+build_qt5_amd64-target(){
+  docker image inspect ${BUILDER_IMAGE_NAME} >/dev/null 2>&1 && {
   echo "Build ${QT_VERSION} amd64-lts-lgplwith toolchain container..."    
   docker run \
+       --cpus=2.5 \
        --env "QT_PATH=/opt/Qt/${QT_VERSION_SHORT}-amd64-lts-lgpl" \
        --env "USER_ID=$(id -u ${USER})"       \
        --env "GROUP_ID=$(id -g ${USER})" \
        --env "CCACHE_DIR=/ccache" \
       --volume ${CCACHE_VOLUME}:/ccache \
-      --volume ${SDK_VOLUME_NAME}:/opt/android-sdk \
-      --volume ${QT5_OPT_VOLUME_NAME}:/opt/Qt \
+      --volume ${OPT_VOLUME_NAME}:/opt \
       --volume ${SRC_VOLUME_NAME}:/usr/local/src:ro \
       --volume ./build_qt5_amd64.sh:/root/build_qt5_amd64.sh  \
-      -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/build_qt5_amd64.sh  
+      -ti --rm ${BUILDER_IMAGE_NAME} /root/build_qt5_amd64.sh  
   return $?
   }
 }
  
 build_qt5_android-target(){
-  docker image inspect ${TOOLCHAIN_IMAGE_NAME} >/dev/null 2>&1 && {
+  docker image inspect ${BUILDER_IMAGE_NAME} >/dev/null 2>&1 && {
   echo "Build ${QT_VERSION} android-lts-lgpl with toolchain container..."    
   docker run \
+       --cpus=2.5 \
        --env "QT_PATH=/opt/Qt/${QT_VERSION_SHORT}-android-lts-lgpl" \
        --env "USER_ID=$(id -u ${USER})"       \
        --env "GROUP_ID=$(id -g ${USER})" \
        --env "CCACHE_DIR=/ccache" \
       --volume ${CCACHE_VOLUME}:/ccache \
-      --volume ${SDK_VOLUME_NAME}:/opt/android-sdk \
-      --volume ${QT5_OPT_VOLUME_NAME}:/opt/Qt \
+      --volume ${OPT_VOLUME_NAME}:/opt\
       --volume ${SRC_VOLUME_NAME}:/usr/local/src:ro \
       --volume ./build_qt5_android.sh:/root/build_qt5_android.sh  \
-      -ti --rm ${TOOLCHAIN_IMAGE_NAME} /root/build_qt5_android.sh 
+      -ti --rm ${BUILDER_IMAGE_NAME} /root/build_qt5_android.sh 
   return $?
   }
 }
-
-docker_build_qt_creator(){     
-     docker image inspect ${TOOLCHAIN_IMAGE_NAME} >/dev/null 2>&1 && {
-        echo "Build Main image with QtCreator..."    
-        local LOG_NAME="${TOOLCHAIN_IMAGE_NAME//[:\/]/_}_qtcreator.log"        
-        echo ${LOG_NAME}
-        docker build \
-	        --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
-            --build-arg="LANG=ru-RU.UTF-8" \
-            --build-arg="TZ=Europe/Moscow" \
-            --build-arg="QTCREATOR_URL=${QTCREATOR_URL}" \
-            --build-arg="USER_ID=$(id -u ${USER})"       \
-            --build-arg="GROUP_ID=$(id -g ${USER})"       \
-            --platform=linux/amd64 \
-	        --tag=${QTCREATOR_IMAGE_NAME} \
-	        --progress=plain \
-            https://github.com/ZanyXDev/for-Qt5-and-Qtd6-dev.git#main:gui 2> ${LOG_NAME}
-            return $?   
-         }
-}
- 
 # MAIN
 main() {
   echo "Starting QTCreator in docker installation..."
   local -a Curl  
   local -r RepoUrl='https://github.com/ZanyXDev/for-Qt5-and-Qtd6-dev/releases/latest/download'   
- 
+   
   if command -v curl >/dev/null; then
     Curl=(curl -fsSL)
   else
@@ -221,10 +240,10 @@ main() {
   download_dot_env_file || {
     echo 'error downloading .env'
     return 12
-  }
-    
-  download_docker_compose_file || {
-    echo 'error downloading Docker Compose file'
+  } 
+  
+  download_scripts || {
+    echo 'error downloading scripts'
     return 13
   }
   
@@ -232,39 +251,45 @@ main() {
     echo 'error pulling Docker images'
     return 14
   }
-  
-  download_scripts || {
-    echo 'error downloading scripts'
+ 
+  docker_prune_volumes|| {
+    echo 'error remove volumes'
     return 15
-  }
+  }  
+  
+  dowload_to_opt_volume || {
+    echo 'error download to opt volume'
+    return 16
+  }  
+  copy_java_to_opt_volume || {
+    echo 'error copy java to opt volume'
+    return 17
+  } 
+  docker_build_builder || {
+    echo 'error build toolchain'
+    return 18
+  }  
   
   git_clone_source || {
     echo 'error git clone sources'
-    return 16  
-  }
-  
-  docker_build_toolchain || {
-    echo 'error build toolchain'
-    return 17
+    return 19 
   }
   
   update_android_sdk || {
     echo 'error update android sdk'
-    return 18
+    return 20
   }
   
   build_qt5_amd64-target || {
     echo 'error build qt5 amd64 target'
-    return 19
-  }
-  build_qt5_android-target || {
-    echo 'error build qt5 android target'
-    return 20
-  }
-  docker_build_qt_creator || {
-    echo 'error build QtCreator image'
     return 21
   }
+  
+  build_qt5_android-target || {
+    echo 'error build qt5 android target'
+    return 22
+  }
+
   return 0
 }
 
