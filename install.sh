@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
-set -o nounset
-set -o pipefail
-tput setab 2
-reset
+set -eu
 set -x
+#-------------------------------------------------------------------------------
+download_and_chmod(){
+    local fname=$1
+    local ext=${fname##*.}
+
+    "${Curl[@]}" "$RepoUrl"/$fname  -o ./$fname
+    [[ -e $fname ]] && {   
+        echo "success downloading ${fname} with ext == ${ext}"   
+        [[ "$ext" = "sh" ]] && chmod +x $fname       
+    } || return 1  
+}
 
 create_app_directory() {
   local -r Tgt="$HOME"/qtcreator-app
@@ -21,13 +29,6 @@ download_dot_env_file() {
   return $?
 }
 
-pull_docker_images() {
-  echo "Pulling docker images"
-  docker pull ${BITNAMI_GIT} 
-  docker pull ${UBUNTU_LTS}
-  docker pull ${TEMURIN_JDK_17}    
-}
-
 function download_scripts(){
   echo "Downloading scripts file..."  
   download_and_chmod "qt5_git_clone.sh"
@@ -37,47 +38,11 @@ function download_scripts(){
   download_and_chmod "build_qt5_android.sh"
 }
 
-download_and_chmod(){
-    local fname=$1
-    local ext=${fname##*.}
-
-    "${Curl[@]}" "$RepoUrl"/$fname  -o ./$fname
-    [[ -e $fname ]] && {   
-        echo "success downloading ${fname} with ext == ${ext}"   
-        [[ "$ext" = "sh" ]] && chmod +x $fname       
-    } || return 1  
-}
-
-
-docker_build_builder(){     
-if [ -z "$(docker images -q ${BUILDER_IMAGE_NAME} 2> /dev/null)" ]; then
-  # do build
-   docker build \   
-	        --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
-	        --build-arg="LANG=ru-RU.UTF-8" \
-	        --build-arg="TZ=Europe/Moscow" \
-	        --platform=linux/amd64 \
-	        --target=stage_1 \
-	        --tag=${BUILDER_IMAGE_NAME} \
-	        --progress=plain \
-            https://github.com/ZanyXDev/for-Qt5-and-Qtd6-dev.git#main:builder            
-fi
-
-if [ -z "$(docker images -q ${QTCREATOR_IMAGE_NAME} 2> /dev/null)" ]; then
-  # do build
-   docker build \            
-	        --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
-	        --build-arg="LANG=ru-RU.UTF-8" \
-	        --build-arg="TZ=Europe/Moscow" \
-            --build-arg="USER_ID=$(id -u ${USER})"  \
-            --build-arg="GROUP_ID=$(id -g ${USER})" \
-	        --platform=linux/amd64 \
-	        --target=stage_2 \
-	        --tag=${QTCREATOR_IMAGE_NAME} \
-	        --progress=plain \
-            https://github.com/ZanyXDev/for-Qt5-and-Qtd6-dev.git#main:builder            
-fi
-    return $?  
+pull_docker_images() {
+  echo "Pulling docker images"
+  docker pull ${BITNAMI_GIT} 
+  docker pull ${UBUNTU_LTS}
+  docker pull ${TEMURIN_JDK_17}    
 }
 
 docker_prune_volumes(){
@@ -86,7 +51,7 @@ docker_prune_volumes(){
    return $?
 }
 
-dowload_to_opt_volume(){
+download_to_opt_volume(){
 echo "Download other source to opt volume..."  
 docker run \
 --env "USER_ID=$(id -u ${USER})" \
@@ -142,20 +107,6 @@ cp -r $JAVA_HOME /opt/target
 return $? 
 }
 
-update_android_sdk(){
-    docker image inspect ${BUILDER_IMAGE_NAME} >/dev/null 2>&1 && {
-        echo "Update android_sdk with toolchain container..."            
-        docker run \
-           --env "USER_ID=$(id -u ${USER})" \
-           --env "GROUP_ID=$(id -g ${USER})" \
-    	    --volume ${OPT_VOLUME_NAME}:/opt \
-	       --volume ${SRC_VOLUME_NAME}:/usr/local/src \
-	       --volume ./get_androidsdk.sh:/root/get_androidsdk.sh \
-	       -ti --rm ${BUILDER_IMAGE_NAME} /root/get_androidsdk.sh 
-           return $?
-         }
-}
-
 git_clone_source() {
     echo "Use git for clone sources..."
     
@@ -173,7 +124,7 @@ git_clone_source() {
    
    docker run \
        --volume ./openssl_git_clone.sh:/root/openssl_git_clone.sh  \
-	   --volume ${SDK_VOLUME_NAME}:/opt/android-sdk \
+	   --volume ${SDK_VOLUME_NAME}:/opt \
        -ti --rm --name git bitnami/git:latest /root/openssl_git_clone.sh "https://github.com/KDAB/android_openssl.git" "/opt/android-sdk/android_openssl" >/dev/null 2>&1 && 
     {
         echo "success git clone android_openssl from KDAB"    
@@ -183,7 +134,48 @@ git_clone_source() {
         return 1
     }
 }
- 
+
+docker_build_builder(){     
+if [ -z "$(docker images -q ${BUILDER_IMAGE_NAME} 2> /dev/null)" ]; then
+# do build stage_1
+docker build --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
+    --build-arg="LANG=ru-RU.UTF-8" \
+    --build-arg="TZ=Europe/Moscow" \
+    --platform=linux/amd64 \
+    --target=stage_1 \
+    --tag=${BUILDER_IMAGE_NAME} \
+    --progress=plain https://github.com/ZanyXDev/for-Qt5-and-Qtd6-dev.git#main:builder            
+fi
+
+if [ -z "$(docker images -q ${QTCREATOR_IMAGE_NAME} 2> /dev/null)" ]; then
+# do build stage_2
+docker build --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
+	        --build-arg="LANG=ru-RU.UTF-8" \
+	        --build-arg="TZ=Europe/Moscow" \
+            --build-arg="USER_ID=$(id -u ${USER})"  \
+            --build-arg="GROUP_ID=$(id -g ${USER})" \
+	        --platform=linux/amd64 \
+	        --target=stage_2 \
+	        --tag=${QTCREATOR_IMAGE_NAME} \
+	        --progress=plain https://github.com/ZanyXDev/for-Qt5-and-Qtd6-dev.git#main:builder            
+fi
+    return $?  
+}
+
+update_android_sdk(){
+docker image inspect ${BUILDER_IMAGE_NAME} >/dev/null 2>&1 && {
+echo "Update android_sdk with toolchain container..."            
+docker run \
+           --env "USER_ID=$(id -u ${USER})" \
+           --env "GROUP_ID=$(id -g ${USER})" \
+    	    --volume ${OPT_VOLUME_NAME}:/opt \
+	       --volume ${SRC_VOLUME_NAME}:/usr/local/src \
+	       --volume ./get_androidsdk.sh:/root/get_androidsdk.sh \
+	       -ti --rm ${BUILDER_IMAGE_NAME} /root/get_androidsdk.sh 
+           return $?
+         }
+}
+
 build_qt5_amd64-target(){
   docker image inspect ${BUILDER_IMAGE_NAME} >/dev/null 2>&1 && {
   echo "Build ${QT_VERSION} amd64-lts-lgplwith toolchain container..."    
@@ -219,6 +211,7 @@ build_qt5_android-target(){
   return $?
   }
 }
+#-------------------------------------------------------------------------------
 # MAIN
 main() {
   echo "Starting QTCreator in docker installation..."
@@ -257,7 +250,7 @@ main() {
     return 15
   }  
   
-  dowload_to_opt_volume || {
+  download_to_opt_volume || {
     echo 'error download to opt volume'
     return 16
   }  
@@ -265,16 +258,17 @@ main() {
     echo 'error copy java to opt volume'
     return 17
   } 
-  docker_build_builder || {
-    echo 'error build toolchain'
-    return 18
-  }  
   
-  git_clone_source || {
+   git_clone_source || {
     echo 'error git clone sources'
-    return 19 
+    return 18 
   }
   
+  docker_build_builder || {
+    echo 'error build toolchain'
+    return 19
+  }    
+ 
   update_android_sdk || {
     echo 'error update android sdk'
     return 20
