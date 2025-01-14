@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-set -eu
-set -x
+set -Eeuxo pipefail # https://vaneyckt.io/posts/safer_bash_scripts_with_set_euxo_pipefail/
 #-------------------------------------------------------------------------------
 download_and_chmod(){
     local fname=$1
@@ -124,8 +123,8 @@ git_clone_source() {
    
    docker run \
        --volume ./openssl_git_clone.sh:/root/openssl_git_clone.sh  \
-	   --volume ${SDK_VOLUME_NAME}:/opt \
-       -ti --rm --name git bitnami/git:latest /root/openssl_git_clone.sh "https://github.com/KDAB/android_openssl.git" "/opt/android-sdk/android_openssl" >/dev/null 2>&1 && 
+	   --volume ${OPT_VOLUME_NAME}:/mnt \
+       -ti --rm --name git bitnami/git:latest /root/openssl_git_clone.sh "https://github.com/KDAB/android_openssl.git" "/mnt/android-sdk/android_openssl" >/dev/null 2>&1 && 
     {
         echo "success git clone android_openssl from KDAB"    
     } || 
@@ -149,9 +148,10 @@ fi
 
 if [ -z "$(docker images -q ${QTCREATOR_IMAGE_NAME} 2> /dev/null)" ]; then
 # do build stage_2
-docker build --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
-	        --build-arg="LANG=ru-RU.UTF-8" \
-	        --build-arg="TZ=Europe/Moscow" \
+docker build \
+    --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
+    --build-arg="LANG=ru-RU.UTF-8" \
+    --build-arg="TZ=Europe/Moscow" \
             --build-arg="USER_ID=$(id -u ${USER})"  \
             --build-arg="GROUP_ID=$(id -g ${USER})" \
 	        --platform=linux/amd64 \
@@ -245,24 +245,25 @@ main() {
     return 14
   }
  
-  docker_prune_volumes|| {
-    echo 'error remove volumes'
-    return 15
-  }  
+#  docker_prune_volumes|| {
+#    echo 'error remove volumes'
+#    return 15
+#  }  
   
-  download_to_opt_volume || {
-    echo 'error download to opt volume'
-    return 16
-  }  
-  copy_java_to_opt_volume || {
-    echo 'error copy java to opt volume'
-    return 17
-  } 
+#  download_to_opt_volume || {
+#    echo 'error download to opt volume'
+#    return 16
+#  }  
   
-   git_clone_source || {
-    echo 'error git clone sources'
-    return 18 
-  }
+#  copy_java_to_opt_volume || {
+#    echo 'error copy java to opt volume'
+#    return 17
+#  } 
+  
+#   git_clone_source || {
+#    echo 'error git clone sources'
+#    return 18 
+#  }
   
   docker_build_builder || {
     echo 'error build toolchain'
