@@ -10,6 +10,16 @@ ARG TARGETARCH
 
 ENV QT_WEBKIT=${QT_WEBKIT:-"n"}
 ENV QT_WEBENGINE=${QT_WEBENGINE:-"n"}
+ENV DISPLAY=:0
+ENV PERSIST=1
+# Allow colored output on command line.
+ENV TERM=xterm-color  
+# +Timezone (если надо на этапе сборки)
+ENV TZ=Europe/Moscow
+ENV JAVA_HOME=/opt/java/openjdk
+ENV JRE_CACERTS_PATH=/opt/java/openjdk/lib/security/cacerts
+ENV JAVA_VERSION="jdk-17.0.13"
+ENV PATH="${PATH}:/opt/Qt/${QT_VERSION}-amd64-lts-lgpl/bin:/opt/Qt/${QT_VERSION}-android-lts-lgpl/libexec:/opt/qtcreator/bin:${JAVA_HOME}/bin"
 
 RUN set -eux; \
     echo "go-faster apt"; \
