@@ -103,8 +103,8 @@ ENV xdg_runtime_dir=/run/user/"${USER_ID}"
 #ENV QT_LOGGING_RULES=qt.qpa.*=true
 ENV JAVA_HOME=/opt/java/openjdk
 ENV JRE_CACERTS_PATH=/opt/java/openjdk/lib/security/cacerts
-ENV JAVA_VERSION="jdk-17.0.13"
-ENV PATH="${PATH}:/opt/Qt/${QT_VERSION}-amd64-lts-lgpl/bin:/opt/Qt/${QT_VERSION}-android-lts-lgpl/libexec:/opt/qtcreator/bin:${JAVA_HOME}/bin"
+ENV JAVA_VERSION="jdk-17.0.13+11"
+ENV PATH="${PATH}:/opt/Qt/${QT_VERSION}-amd64-lts-lgpl/bin:/opt/Qt/${QT_VERSION}-android-lts-lgpl/libexec:/opt/qtcreator/bin:${JAVA_HOME}/bin:/opt/cmake/bin"
 
 RUN set -eux; \  	
     echo "/usr/local/lib" >> /etc/ld.so.conf.d/x86_64-linux-gnu.conf ;\
