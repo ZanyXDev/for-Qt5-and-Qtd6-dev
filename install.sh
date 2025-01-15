@@ -109,7 +109,7 @@ docker run \
 -ti --rm ${TEMURIN_JDK_17} bash -c '#!/bin/bash
 JAVA_HOME=/opt/java/openjdk
 echo "  Copy java binary "
-cp -r $JAVA_HOME /opt/target/java                                 
+cp -r $JAVA_HOME /opt/target/java/openjdk                                 
 '
 return $? 
 }
