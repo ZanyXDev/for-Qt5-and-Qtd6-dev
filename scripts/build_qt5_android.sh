@@ -37,12 +37,12 @@ cd /tmp/build_qt
 OPENSSL_INCDIR='/opt/android-sdk/android_openssl/ssl_1.1/include/' \
 OPENSSL_LIBS_DEBUG="-llibssl -llibcrypto" \
 OPENSSL_LIBS_RELEASE="-llibssl -llibcrypto" \
--prefix ${QT_PATH}
+-prefix ${QT_PATH_ANDROID}
 
 make -j $(nproc) &> make.log
 make -j $(nproc) install 
  
-cp make.log ${QT_PATH}/make_android.log
-cp config.summary ${QT_PATH}/config.summary 
-chown -R $USER_ID:$GROUP_ID ${QT_PATH}
+cp make.log ${QT_PATH_ANDROID}/make_android.log
+cp config.summary ${QT_PATH_ANDROID}/config.summary 
+chown -R $USER_ID:$GROUP_ID ${QT_PATH_ANDROID}
 

@@ -37,6 +37,17 @@ function download_scripts(){
   download_and_chmod "build_qt5_android.sh"
 }
 
+create_docker_run_env(){
+  [[ -e run_env.list ]] && rm -f run_env.list
+  touch run_env.list
+  echo "USER_ID=$(id -u ${USER})" >> run_env.list
+  echo "GROUP_ID=$(id -g ${USER})"  >> run_env.list
+  echo "CCACHE_DIR=/ccache"  >> run_env.list
+  echo "QT_PATH_AMD64=/opt/Qt/${QT_VERSION_SHORT}-amd64-lts-lgpl"  >> run_env.list
+  echo "QT_PATH_ANDROID=/opt/Qt/${QT_VERSION_SHORT}-android-lts-lgpl"  >> run_env.list          
+  return $? 
+}
+
 pull_docker_images() {
   echo "Pulling docker images"
   docker pull ${BITNAMI_GIT} 
@@ -53,9 +64,7 @@ docker_prune_volumes(){
 download_to_opt_volume(){
 echo "Download other source to opt volume..."  
 docker run \
---env "USER_ID=$(id -u ${USER})" \
---env "GROUP_ID=$(id -g ${USER})" \
---env "CCACHE_DIR=/ccache" \
+--env-file run_env.list  \
 --volume ${OPT_VOLUME_NAME}:/opt \
 --volume ${SRC_VOLUME_NAME}:/usr/local/src \
 -ti --rm ${UBUNTU_LTS} bash -c '#!/bin/bash
@@ -100,16 +109,10 @@ chown -R $USER_ID:$GROUP_ID /opt
 
 copy_java_to_opt_volume(){
 echo "Copy java from container..."   
-docker run \
---env "USER_ID=$(id -u ${USER})" \
---env "GROUP_ID=$(id -g ${USER})" \
---env "CCACHE_DIR=/ccache" \
---volume ${OPT_VOLUME_NAME}:/opt/target \
---volume ${SRC_VOLUME_NAME}:/usr/local/src \
--ti --rm ${TEMURIN_JDK_17} bash -c '#!/bin/bash
-JAVA_HOME=/opt/java/openjdk
-echo "  Copy java binary "
-cp -r $JAVA_HOME /opt/target/java/openjdk                                 
+docker run --volume ${OPT_VOLUME_NAME}:/mnt -ti --rm ${TEMURIN_JDK_17} bash -c '
+#!/bin/bash  
+mkdir -p  /mnt/java/openjdk
+cp -r /opt/java/openjdk /mnt/java/openjdk
 '
 return $? 
 }
@@ -173,10 +176,8 @@ fi
 update_android_sdk(){
 echo "Update android_sdk with toolchain container..."            
 docker run \     
---env "USER_ID=$(id -u ${USER})" \
---env "GROUP_ID=$(id -g ${USER})" \
+--env-file run_env.list  \
 --volume ${OPT_VOLUME_NAME}:/opt \
---volume ${SRC_VOLUME_NAME}:/usr/local/src \
 --volume ./get_androidsdk.sh:/root/get_androidsdk.sh \
 -ti --rm ${BUILDER_IMAGE_NAME} /root/get_androidsdk.sh 
 return $?
@@ -186,11 +187,8 @@ build_qt5_amd64-target(){
   docker image inspect ${BUILDER_IMAGE_NAME} >/dev/null 2>&1 && {
   echo "Build ${QT_VERSION} amd64-lts-lgplwith toolchain container..."    
   docker run \
-       --cpus=2.5 \
-       --env "QT_PATH=/opt/Qt/${QT_VERSION_SHORT}-amd64-lts-lgpl" \
-       --env "USER_ID=$(id -u ${USER})"       \
-       --env "GROUP_ID=$(id -g ${USER})" \
-       --env "CCACHE_DIR=/ccache" \
+      --env-file run_env.list  \
+      --cpus=2.5 \
       --volume ${CCACHE_VOLUME}:/ccache \
       --volume ${OPT_VOLUME_NAME}:/opt \
       --volume ${SRC_VOLUME_NAME}:/usr/local/src:ro \
@@ -204,11 +202,8 @@ build_qt5_android-target(){
   docker image inspect ${BUILDER_IMAGE_NAME} >/dev/null 2>&1 && {
   echo "Build ${QT_VERSION} android-lts-lgpl with toolchain container..."    
   docker run \
-       --cpus=2.5 \
-       --env "QT_PATH=/opt/Qt/${QT_VERSION_SHORT}-android-lts-lgpl" \
-       --env "USER_ID=$(id -u ${USER})"       \
-       --env "GROUP_ID=$(id -g ${USER})" \
-       --env "CCACHE_DIR=/ccache" \
+   --env-file run_env.list  \
+   --cpus=2.5 \
       --volume ${CCACHE_VOLUME}:/ccache \
       --volume ${OPT_VOLUME_NAME}:/opt\
       --volume ${SRC_VOLUME_NAME}:/usr/local/src:ro \
@@ -231,6 +226,7 @@ main() {
     return 10
   fi
  
+
   create_app_directory || {
     echo 'error creating QtCreator app directory'
     return 11
@@ -245,7 +241,10 @@ main() {
     echo 'error downloading scripts'
     return 13
   }
-  
+  create_docker_run_env || {
+    echo 'error creating docker run env file'
+    return 11
+  }
   pull_docker_images || {
     echo 'error pulling Docker images'
     return 14
