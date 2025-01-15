@@ -1,4 +1,7 @@
 #!/bin/bash
+export JAVA_HOME=/opt/java/openjdk
+export JRE_CACERTS_PATH=/opt/java/openjdk/lib/security/cacerts
+export JAVA_VERSION=jdk-17.0.13 
 export PATH=${PATH}:${JAVA_HOME}/bin
 export PATH=${PATH}:/opt/cmdline-tools/bin
 
