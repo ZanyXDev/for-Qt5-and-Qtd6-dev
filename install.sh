@@ -85,7 +85,7 @@ apt-get -y update && apt-get -y upgrade && apt-get -y install wget unzip;
     wget -O ${ANDROID_SDK_ROOT}/bundletool-all-1.3.0.jar https://github.com/google/bundletool/releases/download/1.3.0/bundletool-all-1.3.0.jar
     echo "Download cmdline-tools"
     wget -O /opt/download/commandlinetools.zip ${CMDTOOLS_URL} 
-)&  
+)& 
 last_task_pid=$!   
 wait  $last_task_pid   
           
@@ -112,7 +112,7 @@ echo "Copy java from container..."
 docker run --volume ${OPT_VOLUME_NAME}:/mnt -ti --rm ${TEMURIN_JDK_17} bash -c '
 #!/bin/bash  
 mkdir -p  /mnt/java/openjdk
-cp -r /opt/java/openjdk /mnt/java/openjdk
+cp -r /opt/java/openjdk /mnt/java/
 '
 return $? 
 }
@@ -175,11 +175,10 @@ fi
 
 update_android_sdk(){
 echo "Update android_sdk with toolchain container..."            
-docker run \     
---env-file run_env.list  \
---volume ${OPT_VOLUME_NAME}:/opt \
---volume ./get_androidsdk.sh:/root/get_androidsdk.sh \
--ti --rm ${BUILDER_IMAGE_NAME} /root/get_androidsdk.sh 
+docker run --env-file run_env.list \
+    --volume ${OPT_VOLUME_NAME}:/opt \
+    --volume ./get_androidsdk.sh:/root/get_androidsdk.sh \
+    -ti --rm ${BUILDER_IMAGE_NAME} /root/get_androidsdk.sh
 return $?
 }
 
@@ -209,6 +208,14 @@ build_qt5_android-target(){
       --volume ${SRC_VOLUME_NAME}:/usr/local/src:ro \
       --volume ./build_qt5_android.sh:/root/build_qt5_android.sh  \
       -ti --rm ${BUILDER_IMAGE_NAME} /root/build_qt5_android.sh 
+  return $?
+  }
+}
+
+update_ldconfig(){
+docker image inspect ${BUILDER_IMAGE_NAME} >/dev/null 2>&1 && {
+  echo "Update ldconfig inside container..."    
+  docker run --env-file run_env.list --volume ${OPT_VOLUME_NAME}:/opt -ti --rm ${BUILDER_IMAGE_NAME} /sbin/ldconfig
   return $?
   }
 }
@@ -280,7 +287,7 @@ main() {
     return 20
   }
   
-  build_qt5_amd64-target || {
+  build_qt5_amd64-target || {    
     echo 'error build qt5 amd64 target'
     return 21
   }
@@ -289,7 +296,10 @@ main() {
     echo 'error build qt5 android target'
     return 22
   }
-
+  update_ldconfig || {
+    echo 'error update ldconfig'
+    return 23
+  }
   return 0
 }
 
