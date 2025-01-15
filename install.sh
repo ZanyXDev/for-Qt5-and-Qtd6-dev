@@ -109,7 +109,7 @@ docker run \
 -ti --rm ${TEMURIN_JDK_17} bash -c '#!/bin/bash
 JAVA_HOME=/opt/java/openjdk
 echo "  Copy java binary "
-cp -r $JAVA_HOME /opt/target/java                                 
+cp -r $JAVA_HOME /opt/target/java/openjdk                                 
 '
 return $? 
 }
@@ -171,20 +171,15 @@ fi
 }
 
 update_android_sdk(){
-docker image inspect ${BUILDER_IMAGE_NAME} >/dev/null 2>&1 && {
 echo "Update android_sdk with toolchain container..."            
-docker run \
-            --env "JAVA_HOME=/opt/java/openjdk" \
-            --env "JRE_CACERTS_PATH=/opt/java/openjdk/lib/security/cacerts" \
-            --env "JAVA_VERSION=jdk-17.0.13" \        
-           --env "USER_ID=$(id -u ${USER})" \
-           --env "GROUP_ID=$(id -g ${USER})" \
-    	    --volume ${OPT_VOLUME_NAME}:/opt \
-	       --volume ${SRC_VOLUME_NAME}:/usr/local/src \
-	       --volume ./get_androidsdk.sh:/root/get_androidsdk.sh \
-	       -ti --rm ${BUILDER_IMAGE_NAME} /root/get_androidsdk.sh 
-           return $?
-         }
+docker run \     
+--env "USER_ID=$(id -u ${USER})" \
+--env "GROUP_ID=$(id -g ${USER})" \
+--volume ${OPT_VOLUME_NAME}:/opt \
+--volume ${SRC_VOLUME_NAME}:/usr/local/src \
+--volume ./get_androidsdk.sh:/root/get_androidsdk.sh \
+-ti --rm ${BUILDER_IMAGE_NAME} /root/get_androidsdk.sh 
+return $?
 }
 
 build_qt5_amd64-target(){
