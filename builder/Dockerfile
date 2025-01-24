@@ -32,7 +32,7 @@ RUN set -eux; \
     echo "Build essentials for ubuntu/debian" ;\
     apt-get -y install build-essential perl python3 ;\
     echo "Other cpp tools"; \
-    apt-get install -y cppcheck graphviz doxygen git gdb lldb clang-format autoconf;\
+    apt-get install -y cppcheck graphviz doxygen git meld gdb lldb clang-format autoconf;\
     echo "Fontconfig library"; \
     apt-get install -y libfontconfig1-dev fontconfig;\   
     echo "Crypto tools"; \
