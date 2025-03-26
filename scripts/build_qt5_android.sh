@@ -46,3 +46,6 @@ cp make.log ${QT_PATH_ANDROID}/make_android.log
 cp config.summary ${QT_PATH_ANDROID}/config.summary 
 chown -R $USER_ID:$GROUP_ID ${QT_PATH_ANDROID}
 
+echo "Update ldconfig inside container..."    
+/sbin/ldconfig
+

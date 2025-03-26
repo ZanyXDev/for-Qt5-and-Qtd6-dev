@@ -24,3 +24,5 @@ cp make.log ${QT_PATH_AMD64}/make_amd64.log
 cp config.summary ${QT_PATH_AMD64}/config.summary 
 chown -R $USER_ID:$GROUP_ID ${QT_PATH_AMD64}
 
+echo "Update ldconfig inside container..."    
+/sbin/ldconfig
