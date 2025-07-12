@@ -33,6 +33,8 @@ RUN set -eux; \
     apt-get -y install build-essential perl python3 ;\
     echo "Other cpp tools"; \
     apt-get install -y cppcheck graphviz doxygen git meld gdb lldb clang-format autoconf;\
+    echo "Memory leaks cpp tools"; \
+    apt-get install -y valgrind;\
     echo "Fontconfig library"; \
     apt-get install -y libfontconfig1-dev fontconfig;\   
     echo "Crypto tools"; \
@@ -104,7 +106,11 @@ ENV xdg_runtime_dir=/run/user/"${USER_ID}"
 ENV JAVA_HOME=/opt/java/openjdk
 ENV JRE_CACERTS_PATH=/opt/java/openjdk/lib/security/cacerts
 ENV JAVA_VERSION="jdk-17.0.13+11"
-ENV PATH="${PATH}:/opt/Qt/${QT_VERSION}-amd64-lts-lgpl/bin:/opt/Qt/${QT_VERSION}-android-lts-lgpl/libexec:/opt/qtcreator/bin:${JAVA_HOME}/bin:/opt/cmake/bin"
+ENV PATH="${PATH}:/opt/Qt/${QT_VERSION}-amd64-lts-lgpl/bin:/opt/Qt/${QT_VERSION}-android-lts-lgpl/libexec:/opt/qt-creator/bin:${JAVA_HOME}/bin:/opt/cmake/bin:${HOME}/bin"
+
+#Чтобы внутри контейнера работал отладчик, добавил это, решение взял отсюда
+#https://askubuntu.com/questions/41629/after-upgrade-gdb-wont-attach-to-process
+RUN echo 0 > /etc/sysctl.d/10-ptrace.conf
 
 RUN set -eux; \  	
     echo "/usr/local/lib" >> /etc/ld.so.conf.d/x86_64-linux-gnu.conf ;\
@@ -126,9 +132,17 @@ RUN set -eux; \
       adduser	developer audio; \
       echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers; \      
       mkdir -p /home/developer; \
+      echo "installing fonts at /home/developer to ~/.fonts/";\
+      mkdir -p /home/developer/.fonts/adobe-fonts/source-code-pro ;\
+      git clone https://github.com/adobe-fonts/source-code-pro.git /home/developer/.fonts/adobe-fonts/source-code-pro ;\
+      echo "find /home/developer/.fonts/ -iname '*.ttf' -exec echo \{\} \;";\
+      fc-cache -f -v /home/developer/.fonts/adobe-fonts/source-code-pro ;\
+      echo "finished installing"  ;\      
       chown ${USER_ID}:${GROUP_ID} -R /home/developer; \
     fi 
-    
+RUN 
+
+
 USER developer
 
 WORKDIR /home/developer
