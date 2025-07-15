@@ -14,7 +14,10 @@ create_app_directory() {
 
 download_dot_env_file() {
   echo "Downloading .env file..."
-  curl -fsSL https://raw.githubusercontent.com/ZanyXDev/for-Qt5-and-Qtd6-dev/refs/heads/main/qtcreator_app.env -o ./.env
+  if [ ! -f .env ]; then
+      echo "File .env don't exist"
+      curl -fsSL https://raw.githubusercontent.com/ZanyXDev/for-Qt5-and-Qtd6-dev/refs/heads/main/qtcreator_app.env -o ./.env
+  fi
   [[ -e .env ]] && {   
     HOST_TARGET=`lscpu | grep Architecture | awk {'print $2'}`  
     set -a && source .env && set +a
@@ -62,24 +65,36 @@ pull_docker_images() {
 }
    
 docker_update_qt_creator(){     
-     docker image inspect ${TOOLCHAIN_IMAGE_NAME} >/dev/null 2>&1 && {
-        echo "ReBuild Main image with QtCreator..."    
-        local LOG_NAME="${TOOLCHAIN_IMAGE_NAME//[:\/]/_}_qtcreator.log"        
-        echo ${LOG_NAME}
-        docker build \
-            --build-arg="CMAKE_URL=https://github.com/Kitware/CMake/releases/download/v3.30.5/cmake-3.30.5-linux-x86_64.tar.gz" \
-            --build-arg="CMDTOOLS_URL=https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" \
-            --build-arg="QTCREATOR_URL=${QTCREATOR_URL}" \
-            --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
-            --build-arg="TZ=Europe/Moscow" \
-            --build-arg="USER_ID=$(id -u ${USER})"       \
-            --build-arg="GROUP_ID=$(id -g ${USER})"       \
-            --platform=linux/amd64 \
+echo `$(docker images -q ${BUILDER_IMAGE_NAME})`
+
+if [ -z "$(docker images -q ${BUILDER_IMAGE_NAME} 2> /dev/null)" ]; then
+# do build stage_1
+docker build --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
+    --build-arg="LANG=ru-RU.UTF-8" \
+    --build-arg="TZ=Europe/Moscow" \
+    --platform=linux/amd64 \
+    --target=stage_1 \
+    --tag=${BUILDER_IMAGE_NAME} \
+    --progress=plain https://github.com/ZanyXDev/for-Qt5-and-Qtd6-dev.git#main:builder            
+fi
+
+if [ -z "$(docker images -q ${QTCREATOR_IMAGE_NAME} 2> /dev/null)" ]; then
+# do build stage_2
+docker build \
+    --build-arg="QT_VERSION=${QT_VERSION_SHORT}" \
+    --build-arg="LANG=ru-RU.UTF-8" \
+    --build-arg="TZ=Europe/Moscow" \
+            --build-arg="USER_ID=$(id -u ${USER})"  \
+            --build-arg="GROUP_ID=$(id -g ${USER})" \
+	        --platform=linux/amd64 \
+	        --target=stage_2 \
 	        --tag=${QTCREATOR_IMAGE_NAME} \
-	        --progress=plain \
-            https://github.com/ZanyXDev/for-Qt5-and-Qtd6-dev.git#main:update 2> ${LOG_NAME}
-            return $?   
-         }
+	        --progress=plain https://github.com/ZanyXDev/for-Qt5-and-Qtd6-dev.git#main:builder            
+fi
+
+echo "Update ldconfig inside container..."    
+docker run --env-file run_env.list --volume ${OPT_VOLUME_NAME}:/opt -ti --rm ${BUILDER_IMAGE_NAME} /sbin/ldconfig
+    return $? 
 }
  
 # MAIN
