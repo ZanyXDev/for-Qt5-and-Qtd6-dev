@@ -33,6 +33,8 @@ RUN set -eux; \
     apt-get -y install build-essential perl python3 ;\
     echo "Other cpp tools"; \
     apt-get install -y cppcheck graphviz doxygen git meld gdb lldb clang-format autoconf;\
+    echo "Other debug tools"; \
+    apt-get install -y strace;\    
     echo "Memory leaks cpp tools"; \
     apt-get install -y valgrind;\
     echo "Fontconfig library"; \
