@@ -2,8 +2,8 @@
 FROM alpine:3.14.2 AS build
 RUN apk add --no-cache g++ libx11-dev make git
 WORKDIR /repo
-RUN git clone git@github.com:nonpop/xkblayout-state.git  
-RUN make
+RUN git clone https://github.com/nonpop/xkblayout-state.git \
+ && cd xkblayout-state && make
 
 RUN cat <<EOF > /repo/auto_en.sh
 #!/bin/bash
@@ -83,7 +83,7 @@ RUN set -eux; \
     apt-get -y install  gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav ; \    
     echo "QDoc Documentation Generator Tool Ubuntu/Debian " ;\
     apt-get -y install clang libclang-dev ;\
-    if ["$QT_WEBKIT" = "y"]; then \
+    if [ "$QT_WEBKIT" = "y" ]; then \
       echo "Qt WebKit Ubuntu/Debian" >>/root/installed_deb.log;\	
       apt-get -y install flex bison gperf libicu-dev libxslt-dev ruby; \
     fi; \
