@@ -1,3 +1,32 @@
+# ------------------- Small build images ----------------------------------------------
+FROM alpine:3.14.2 AS build
+RUN apk add --no-cache g++ libx11-dev make git
+WORKDIR /repo
+RUN git clone git@github.com:nonpop/xkblayout-state.git  
+RUN make
+
+RUN cat <<EOF > /repo/auto_en.sh
+#!/bin/bash
+# Переключаемся на EN после 1000 мс бездействия в любом окне
+
+IDLE_MS=1000          # пауза, после которой переключаемся
+EN_GROUP=0            # номер группы EN в вашей XKB-схеме
+RU_GROUP=1            # номер группы RU (проверьте xkblayout-state print)
+
+while true; do
+    # Ждём, пока не пройдёт ровно $IDLE_MS миллисекунд без событий
+    idle=$(xprintidle)
+    if (( idle >= IDLE_MS )); then
+        # Если сейчас включена RU-группа → переключить на EN
+        if [[ "$(~/.local/bin/xkblayout-state print '%c')" == "$RU_GROUP" ]]; then
+            ~/.local/bin/xkblayout-state set "$EN_GROUP"
+        fi
+    fi
+    sleep 0.05
+done
+EOF
+RUN chmod +x /repo/auto_en.sh
+
 # ------------------- Base images ----------------------------------------------
 FROM ubuntu:22.04 AS stage_1
 
@@ -65,10 +94,11 @@ RUN set -eux; \
 			           gperf bison nodejs; \
     fi; \   
     echo "Auth Tool Ubuntu/Debian " ;\
-    apt-get -y install sudo nano mc ;\          
+    apt-get -y install sudo nano mc ;\   
+    echo "Add small X11 tools Ubuntu/Debian " ;\
+    apt-get -y install xprintidle       
     apt-get clean -y && rm -rf /var/lib/apt/lists/*
     
-
 FROM stage_1 AS stage_2
 # Declare build parameters.
 ARG QT_VERSION
@@ -131,7 +161,7 @@ RUN set -eux; \
       install -d -m 0755 -o developer -g ${GROUP_ID} /home/developer; \
       adduser developer sudo; \
       echo "adding user developer to audio group"; \
-      adduser	developer audio; \
+      adduser developer audio; \
       echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers; \      
       mkdir -p /home/developer; \
       echo "installing fonts at /home/developer to ~/.fonts/";\
@@ -139,11 +169,14 @@ RUN set -eux; \
       git clone https://github.com/adobe-fonts/source-code-pro.git /home/developer/.fonts/adobe-fonts/source-code-pro ;\
       echo "find /home/developer/.fonts/ -iname '*.ttf' -exec echo \{\} \;";\
       fc-cache -f -v /home/developer/.fonts/adobe-fonts/source-code-pro ;\
-      echo "finished installing"  ;\      
+      mkdir -p /home/developer/.local/bin ;\
+      echo "~/.local/bin/auto-en.sh &" >>/home/developer/.xpofile ;\     
+      echo "finished installing"  ;\ 
       chown ${USER_ID}:${GROUP_ID} -R /home/developer; \
-    fi 
-RUN 
+    fi    
 
+COPY --from=build --chown=${USER_ID}:${GROUP_ID} /repo/xkblayout-state /home/developer/.local/bin
+COPY --from=build --chown=${USER_ID}:${GROUP_ID} /repo/auto_en.sh /home/developer/.local/bin
 
 USER developer
 
