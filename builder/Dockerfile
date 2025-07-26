@@ -96,7 +96,7 @@ RUN set -eux; \
     echo "Auth Tool Ubuntu/Debian " ;\
     apt-get -y install sudo nano mc ;\   
     echo "Add small X11 tools Ubuntu/Debian " ;\
-    apt-get -y install xprintidle       
+    apt-get -y install xprintidle ;\      
     apt-get clean -y && rm -rf /var/lib/apt/lists/*
     
 FROM stage_1 AS stage_2
