@@ -219,6 +219,27 @@ docker image inspect ${BUILDER_IMAGE_NAME} >/dev/null 2>&1 && {
   return $?
   }
 }
+setup_darkula(){
+docker image inspect ${BUILDER_IMAGE_NAME} >/dev/null 2>&1 && {
+  echo "setup darcula theme..."    
+  docker run \
+    --env-file run_env.list \
+    --volume ${SRC_VOLUME_NAME}:/usr/local/src \
+    --volume ${OPT_VOLUME_NAME}:/opt \    
+    -ti --rm ${BUILDER_IMAGE_NAME} bash -c \
+'#!/bin/bash
+cd /usr/local/src
+git clone https://github.com/dracula/qtcreator.git
+cd qtcreator
+cp dracula.xml /opt/qt-creator/share/qtcreator/styles
+cp drakula.creatortheme /opt/qt-creator/share/qtcreator/themes
+cp drakula.figmatokens  /opt/qt-creator/share/qtcreator/themes
+chown -R $USER_ID:$GROUP_ID /opt/qt-creator/share/qtcreator/
+'
+  return $?
+  }
+
+}
 #-------------------------------------------------------------------------------
 # MAIN
 main() {
@@ -299,6 +320,11 @@ main() {
   update_ldconfig || {
     echo 'error update ldconfig'
     return 23
+  }
+  
+  setup_darkula || {
+    echo 'error git clone and setup darkula theme'
+    return 24
   }
   return 0
 }
