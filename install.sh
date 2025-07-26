@@ -53,6 +53,7 @@ pull_docker_images() {
   docker pull ${BITNAMI_GIT} 
   docker pull ${UBUNTU_LTS}
   docker pull ${TEMURIN_JDK_17}    
+  docker pull alpine:3.14.2
 }
 
 docker_prune_volumes(){

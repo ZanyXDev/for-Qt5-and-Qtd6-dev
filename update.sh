@@ -30,6 +30,7 @@ pull_docker_images() {
   docker pull bitnami/git:latest
   docker pull ubuntu:22.04
   docker pull eclipse-temurin:17 
+  docker pull alpine:3.14.2
   
   docker image inspect $BITNAMI_GIT >/dev/null 2>&1 && 
   {
@@ -97,6 +98,25 @@ docker run --env-file run_env.list --volume ${OPT_VOLUME_NAME}:/opt -ti --rm ${B
     return $? 
 }
  
+ setup_darkula(){
+docker image inspect ${BUILDER_IMAGE_NAME} >/dev/null 2>&1 && {
+  echo "setup darcula theme..."    
+  docker run \
+    --env-file run_env.list \
+    --volume ${SRC_VOLUME_NAME}:/usr/local/src \
+    --volume ${OPT_VOLUME_NAME}:/opt \    
+    -ti --rm ${BUILDER_IMAGE_NAME} bash -c \
+'#!/bin/bash
+cd /usr/local/src
+git clone https://github.com/dracula/qtcreator.git
+cd qtcreator
+cp dracula.xml /opt/qt-creator/share/qtcreator/styles
+cp drakula.creatortheme /opt/qt-creator/share/qtcreator/themes
+cp drakula.figmatokens  /opt/qt-creator/share/qtcreator/themes
+chown -R $USER_ID:$GROUP_ID /opt/qt-creator/share/qtcreator/
+'
+  return $?
+  }
 # MAIN
 main() {
   echo "Starting QTCreator in docker installation..."
@@ -126,6 +146,10 @@ main() {
   docker_update_qt_creator || {
     echo 'error update QtCreator image'
     return 21
+  }
+    setup_darkula || {
+    echo 'error git clone and setup darkula theme'
+    return 24
   }
   return 0
 }
