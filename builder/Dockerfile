@@ -59,7 +59,7 @@ RUN set -eux; \
     apt-get -y update  ;\
     apt-get -y upgrade ;\
     echo "Build essentials for ubuntu/debian" ;\
-    apt-get -y install build-essential perl python3 ;\
+    apt-get -y install build-essential perl python3 ccache ;\
     echo "Other cpp tools"; \
     apt-get install -y cppcheck graphviz doxygen git meld gdb lldb clang-format autoconf;\
     echo "Other debug tools"; \
@@ -163,20 +163,15 @@ RUN set -eux; \
       echo "adding user developer to audio group"; \
       adduser developer audio; \
       echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers; \      
-      mkdir -p /home/developer; \
-      echo "installing fonts at /home/developer to ~/.fonts/";\
-      mkdir -p /home/developer/.fonts/adobe-fonts/source-code-pro ;\
-      git clone https://github.com/adobe-fonts/source-code-pro.git /home/developer/.fonts/adobe-fonts/source-code-pro ;\
-      echo "find /home/developer/.fonts/ -iname '*.ttf' -exec echo \{\} \;";\
-      fc-cache -f -v /home/developer/.fonts/adobe-fonts/source-code-pro ;\
-      mkdir -p /home/developer/.local/bin ;\
-      echo "~/.local/bin/auto-en.sh &" >>/home/developer/.xpofile ;\     
+      mkdir -p /home/developer; \   
+      mkdir -p /usr/loca/src/fonts/adobe-fonts/source-code-pro ;\
+      git clone https://github.com/adobe-fonts/source-code-pro.git /usr/loca/src/fonts/adobe-fonts/source-code-pro ;\
       echo "finished installing"  ;\ 
       chown ${USER_ID}:${GROUP_ID} -R /home/developer; \
     fi    
 
-COPY --from=build --chown=${USER_ID}:${GROUP_ID} /repo/xkblayout-state /home/developer/.local/bin
-COPY --from=build --chown=${USER_ID}:${GROUP_ID} /repo/auto_en.sh /home/developer/.local/bin
+COPY --from=build --chown=${USER_ID}:${GROUP_ID} /repo/xkblayout-state /usr/local/bin
+COPY --from=build --chown=${USER_ID}:${GROUP_ID} /repo/auto_en.sh /usr/local/bin
 
 USER developer
 
